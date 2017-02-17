@@ -31,7 +31,7 @@ var letter_y = 345;
 var next_open = 0;
 var last_left = [];
 
-var speed = 65;
+var speed = 50;
 
 var keysEnabled = true;
 
@@ -139,6 +139,7 @@ function draw() {
 						else
 							letters[i].hitTop(letter_y);
 						letters[i].move();
+						keysEnabled = false;
 					}
 				}
 			}
