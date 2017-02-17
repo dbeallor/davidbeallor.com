@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>David Beallor</title>
+     <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://use.fontawesome.com/f172b51bba.js"></script>
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/p5.js"></script>
+</head>
+<body class = "backing">
+    <style>
+        @media (max-width: 768px){.navbar-fixed-side{margin-left:-15px;margin-right:-15px}}@media (min-width: 768px){.navbar-fixed-side{position:fixed;margin:0 -15px;height:100vh;width:inherit;overflow:auto;border-top-width:0;border-bottom-width:0;border-radius:0}.navbar-fixed-side .container,.navbar-fixed-side .container-fluid{width:auto;padding-left:0;padding-right:0}.navbar-fixed-side .navbar-header{float:none}.navbar-fixed-side .navbar-brand{height:auto}.navbar-fixed-side>.container .navbar-brand,.navbar-fixed-side>.container-fluid .navbar-brand{margin-left:0}.navbar-fixed-side .navbar-collapse{width:100%;border-top:1px solid #e7e7e7}.navbar-fixed-side .navbar-nav{float:none;margin:0 -15px}.navbar-fixed-side .navbar-nav>li{float:none}.navbar-fixed-side .navbar-nav>li>a{padding-top:10px;padding-bottom:10px;border-bottom:1px solid #e7e7e7}.navbar-fixed-side .navbar-form{margin:0;margin-left:-15px;margin-right:-15px;padding:10px 15px;border-bottom:1px solid #e7e7e7}.navbar-fixed-side .navbar-text{float:none;margin-left:0;margin-right:0}.navbar-fixed-side .navbar-left,.navbar-fixed-side .navbar-right{float:none !important}.navbar-fixed-side .navbar-nav .dropdown-menu{position:static;float:none;width:auto;margin-top:0;background-color:transparent;border:0;box-shadow:none;border-bottom:1px solid #e7e7e7}.navbar-fixed-side .navbar-nav .dropdown-menu>li>a,.navbar-fixed-side .navbar-nav .dropdown-menu .dropdown-header{padding:5px 15px 5px 25px}.navbar-fixed-side .navbar-nav .dropdown-menu>li>a{line-height:20px;color:#777}.navbar-fixed-side .navbar-nav .dropdown-menu>li>a:hover,.navbar-fixed-side .navbar-nav .dropdown-menu>li>a:focus{background-image:none}.navbar-fixed-side .navbar-nav .dropdown-menu>.active>a{background-color:#e7e7e7;color:#555}.navbar-fixed-side .navbar-nav>li>a:hover,.navbar-fixed-side .navbar-nav>li>a:focus,.navbar-fixed-side .navbar-nav .dropdown-menu>li>a:hover,.navbar-fixed-side .navbar-nav .dropdown-menu>li>a:focus{background-color:#f0f0f0;color:#333}.navbar-fixed-side .dropdown>.dropdown-toggle,.navbar-fixed-side .dropdown-menu>.dropdown-header{background-color:transparent !important;color:#9d9d9d !important;cursor:default;font-size:0.8em;text-transform:uppercase;border-bottom:none;padding-bottom:0}.navbar-fixed-side .dropdown-toggle .caret{display:none}.navbar-fixed-side .dropdown-menu{display:block}.navbar-fixed-side.navbar-inverse .navbar-collapse,.navbar-fixed-side.navbar-inverse .navbar-nav>li>a,.navbar-fixed-side.navbar-inverse .navbar-form,.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu{border-color:#363636}.navbar-fixed-side.navbar-inverse .divider{background-color:#363636}.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu>li>a{color:#9d9d9d}.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu>.active>a{background-color:#090909;color:#fff}.navbar-fixed-side.navbar-inverse .navbar-nav>li:not(.active)>a:hover,.navbar-fixed-side.navbar-inverse .navbar-nav>li:not(.active)>a:focus,.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu>li:not(.active)>a:hover,.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu>li:not(.active)>a:focus{background-color:#2f2f2f;color:#fff}.navbar-fixed-side.navbar-inverse .dropdown>.dropdown-toggle{color:#777777 !important}}
+
+             .modal-btn{
+                float:right;
+                background: #299E31;
+                border:0;
+            }
+
+            .modal-btn:hover, .modal-btn:focus{
+                float:right;
+                background: #299E31;
+                border:0; 
+                outline:none;
+            }
+
+            .panel-default{
+                background-color: rgb(51,51,51);
+                border:0;
+            }
+
+            .panel-default > .panel-heading-custom{
+                background-image: none;
+                background-color: rgb(101,101,101);
+                color: #ffffff;
+            }
+
+            .backing{
+                background-color: rgb(31,31,31);
+            }
+
+            .class2048{
+                background-color: rgb(51,51,51);
+            }
+
+            .koch-window{
+                background-color: rgb(51,51,51);
+            }
+
+            .type-font{
+                font-family: "Lucida Console", Lucida, monospace;
+                color: white;
+            }
+
+            .modal-dialog-koch{
+                height:450px;
+                width: 750px;
+            }
+
+            .modal-dialog-2048{
+                height:500px;
+                width: 530px;
+            }
+
+            .modal-dialog-crash{
+                height:525px;
+                width: 975px;
+            }
+
+            .modal-dialog-lsystem{
+                height:550px;
+                width: 850px;
+            }
+
+            .modal-dialog-trees{
+                height:475px;
+                width: 850px;
+            }
+
+            .modal-header{
+                background: rgb(101,101,101);
+                border:0;
+            }
+
+            .modal-body{
+                background-color:rgb(51,51,51);
+            }
+
+            .close:hover, .close:focus{
+                outline:none;
+            }
+
+            .description{
+                color:rgb(190,190,200);
+                padding-top: 15px;
+                text-align: justify;
+                text-justify: inner-word;
+            }
+
+            .icon2048{
+                padding-bottom: 10px;
+                float:right;
+            }
+
+            .icon-lsystem{
+                padding-top: 20px;
+                padding-bottom: 30px;
+            }
+
+            .modal-title{
+                text-align: center;
+            }
+
+            .jumbotron{
+                background-color: rgb(101,101,101); 
+            }
+            .linkedin-icon{
+                color: #1B942D;
+                padding-top: 12px;
+                float: center;
+            }
+
+            .linkedin-icon:hover{
+                color: rgb(200,200,200);
+            }
+             
+    </style>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3 col-lg-2">
+                <nav class="navbar navbar-default navbar-fixed-side navbar-inverse">
+                    <div class="container-fluid">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand type-font" href="#" style="color:white;">David Beallor</a>
+                            <a  target="_blank" href="https://www.linkedin.com/in/david-beallor-02b61912b/"><i class='fa fa-linkedin-square fa-2x linkedin-icon'></i></a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                            <ul class="nav navbar-nav">
+                                <li class="active type-font"><a href="#">Projects<span class="sr-only">(current)</span></a></li>
+                                <li class="type-font"><a href="resume.pdf" target="_blank">Resume</a></li>
+                            </ul>
+                        </div><!-- /.navbar-collapse -->
+                    </div><!-- /.container-fluid -->
+                </nav>
+            </div>
+            <div class="col-sm-9 col-lg-9" style="padding-top: 15px;">
+                <div class="panel-group">
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-heading-custom">
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-sm-8 col-lg-8">        
+                                <h3 class="type-font" style="color:white;">21st Century Aviation Accidents - A Data Visualization</h1>
+                                <p class="type-font description">Plane crashes are one of those things that everyone tells themselves happen extremely rarely, especially right before a flight. Indeed with thousands of flights taking off each hour from airports around the world, there have only been 142 crashes since 2000 that have killed more than ten people; quite a miniscule fraction.</p>
+                                <p class="type-font description">All data was collected from the US National Transportation Safety Board database on aviation accidents. The visualization was created with p5.js, with some help from the MapBox API.</p>
+                            </div>
+                            <div class="col-sm-4 col-lg-4">
+                                <img class="icon-lsystem" src="CrashMap/example.png" height="100%" width="100%"></img>
+
+                                <!-- Trigger the modal with a button -->
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal5">Open Module</button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div id="myModal5" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-dialog-crash">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title type-font">Aviation Accidents</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <iframe src="CrashMap/index.html" height="500px" width="950px" style="border:0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-heading-custom">
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-sm-8 col-lg-8">        
+                                <h3 class="type-font" style="color:white;">Fractal Trees - A Fractal Playground</h1>
+                                <p class="type-font description">My first introduction to fractals was a tree branching example that went something like this...</p> 
+                                <p class="type-font description">Consider a straight line, and a function that appends two branches at a certain angle to the end of that line. Now call that function on the two new branches, and on the four new branches after that, and so on and so forth. The resulting structure is a beautiful, tree-like fractal!</p>
+                                <p class="type-font description"> This GUI allows the user to play around with the angle, colour, and sizing of the branches to dynamically create new fractal trees using only sliders.</p>
+                            </div>
+                            <div class="col-sm-4 col-lg-4">
+                                <img class="icon-lsystem" src="FractalTrees/example.png" height="100%" width="100%"></img>
+
+                                <!-- Trigger the modal with a button -->
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal4">Open Module</button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div id="myModal4" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-dialog-trees">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title type-font">Fractal Trees Playground</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <iframe src="FractalTrees/index.html" height="475px" width="800px" style="border:0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-heading-custom">
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-sm-8 col-lg-8">
+                                <h3 class="type-font" style="color:white;">L-Systems - A Fractal Generator</h1>
+                                <p class="type-font description">In 1968, Hungarian biologist Aristid Lindenmayer introduced a system that converts strings of characters into geometric shapes. The L-System describes a beautiful isomorphism between the string,</p>
+                                <p class="type-font description" style="text-align: center;">"F[++F-F-F][--F+F+F]"</p>
+                                <p class="type-font description"> and the tree structure seen in the image provided. To translate, move forward and draw a line for each 'F', save branch points and return to them with '[' and ']', and rotate with '+' and '-'. Repeatedly replacing each 'F' with a copy of the string itself yields a beautiful fractal structure. Using this GUI, you can play around with different strings and see what you fractals arise from them!</p>
+                            </div>
+                            <div class="col-sm-4 col-lg-4">
+                                <img class="icon-lsystem" src="LSystemTrees/example.png" height="100%" width="100%"></img>
+
+                                <!-- Trigger the modal with a button -->
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal3">Open Module</button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div id="myModal3" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-dialog-lsystem">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title type-font">L-System Trees</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <iframe src="LSystemTrees/index.html" height="500px" width="800px" style="border:0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-heading-custom">
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-sm-8 col-lg-8">
+                                <h3 class="type-font" style="color:white;">Koch Snowflakes - A Fractal Generator</h1>
+                                <p class="type-font description">As a Mathematics and Computer Engineering student, my fascination with fractals is probably not too surprising. The Koch Snowflake is one of my favorite fractals, which takes a seed and replaces each line within it with a copy of itself.</p>
+                                <p class="type-font description"> Play around with different seeds and see what cool fractals you can come up with!</p>
+                            </div>
+                            <div class="col-sm-4 col-lg-4">
+                                <img class="icon2048" src="KochFractals/example.png" height="100%" width="100%"></img>
+
+                                <!-- Trigger the modal with a button -->
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal2">Open Module</button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div id="myModal2" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-dialog-koch">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title type-font">Koch Snowflakes</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <iframe src="KochFractals/index.html" height="350px" width="700px" style="border:0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-heading-custom">
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-sm-8 col-lg-8">
+                                <h3 class="type-font" style="color:white;">Word Twist - A Word Puzzler</h1>
+                                <p class="type-font description">For the other crossword fanatics out there who lack a morning newspaper to get their fix, here's my favorite word puzzler.</p>
+                                <p class="type-font description"> For those not familiar, you are given six letters, with the objective being to find all the words of three letters or more that can be constructed from permutations of the original six letters. Though the rules are simple, the game can be quite challenging (especially with an oversized dictionary as a lookup).</p>
+                            </div>
+                            <div class="col-sm-4 col-lg-4">
+                                <img class="icon2048" src="WordTwist/example.png" height="100%" width="100%"></img>
+
+                                <!-- Trigger the modal with a button -->
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal">Open Module</button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div id="myModal" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-dialog-2048">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title type-font">Word Twist</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <!-- <iframe src="WordTwist/index.html" height="500px" width="500px" style="border:0"></iframe>
+                                             -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-heading-custom">
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-sm-8 col-lg-8">
+                                <h3 class="type-font">2048 - A Dynamic Puzzle Game</h1>
+                                <p class="type-font description">I have always been a sucker for a good puzzle game, and when this game went viral a few years back, I know I wasn't the only one who played it for hours on end.</p>
+                                <p class="type-font description"> For those who are not familiar with the game, the numbered tiles can be slid around in all four directions using the arrow keys. When two tiles of the same value collide, they merge and sum together in value. The objective of the game is to sum together enough tiles to create one with value 2048.</p>
+                            </div>
+                            <div class="col-sm-4 col-lg-4">
+                                <img class="icon2048" src="2048/example.png" height="100%" width="100%"></img>
+
+                                <!-- Trigger the modal with a button -->
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal1">Open Module</button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div id="myModal1" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-dialog-2048">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title type-font">2048</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <iframe src="2048/index.html" height="500px" width="500px" style="border:0"></iframe>
+                                            <p class="type-font">controls: arrow keys</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
