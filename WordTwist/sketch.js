@@ -31,7 +31,7 @@ var letter_y = 345;
 var next_open = 0;
 var last_left = [];
 
-var speed = 50;
+var speed = 30;
 
 var keysEnabled = true;
 
