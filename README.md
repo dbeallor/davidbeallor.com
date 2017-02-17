@@ -1,2 +1,0 @@
-# davidbeallor.com
-personal site
