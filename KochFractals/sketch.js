@@ -150,7 +150,7 @@ function movePoints(){
 	if (move[2]){
 		push();
 		new_loc_y = pointY_orig + mouseY-mouseY_orig;
-		if (new_loc_y>=-250 && new_loc_y<=-30 && new_loc_y>=b.y && new_loc_y>=d.y)
+		if (new_loc_y>=-250 && new_loc_y<=-30 && new_loc_y<=b.y && new_loc_y<=d.y)
 			c.y = new_loc_y;
 		pop();
 	}
