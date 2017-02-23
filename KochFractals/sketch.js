@@ -5,6 +5,7 @@ var a,b,c,d,e;
 var move = [false, false, false, false, false];
 var mouseX_orig, mouseY_orig;
 var seed;
+var started = false;
 
 function setup() {
 	createCanvas(700,350);
@@ -17,27 +18,47 @@ function setup() {
 
 function draw() {
 	background(51);
-	translate(100,base);
-	if (!fractalize){
+	if (!started){
 		push();
-		fill(255);
-		noStroke();
-		textSize(12);
-		text("drag me around", 208, -285);
-		text("press < space > to lock", 187, -268);
+		fill(200);
+		rectMode(CENTER);
+		rect(width/2,height/2,230,65);
 		pop();
-		movePoints();
-		drawLines();
-	}		
-	else {
 		push();
-		fill(255);
-		noStroke();
-		textSize(12);
-		text("press < enter > to fractalize", 445, -285);
-		text("press < r > to restart", 467, -268);
+		fill(161,212,144);
+		rectMode(CENTER);
+		rect(width/2,height/2,225,60);
 		pop();
-		seed.show();
+		push();
+		fill(0);
+		textSize(24);
+		textAlign(CENTER,CENTER);
+		text("< click to start >",width/2,height/2);
+		pop();
+	}
+	else{
+		translate(100,base);
+		if (!fractalize){
+			push();
+			fill(255);
+			noStroke();
+			textSize(12);
+			text("drag me around", 208, -285);
+			text("press < space > to lock", 187, -268);
+			pop();
+			movePoints();
+			drawLines();
+		}		
+		else {
+			push();
+			fill(255);
+			noStroke();
+			textSize(12);
+			text("press < enter > to fractalize", 445, -285);
+			text("press < r > to restart", 467, -268);
+			pop();
+			seed.show();
+		}
 	}
 }
 
@@ -60,7 +81,10 @@ function keyPressed(){
 
 function mousePressed(){
 	var points = [a, b, c, d, e];
-	if (!fractalize){
+	if (!started && mouseX<=width && mouseY<=height){
+		started = true;
+	}
+	if (!fractalize && started){
 		for (var i=0; i<points.length; i++){
 			if (dist(mouseX-100, mouseY-base, points[i].x, points[i].y)<6){
 				mouseX_orig = mouseX;
@@ -126,7 +150,7 @@ function movePoints(){
 	if (move[2]){
 		push();
 		new_loc_y = pointY_orig + mouseY-mouseY_orig;
-		if (new_loc_y>=-250 && new_loc_y<=-30)
+		if (new_loc_y>=-250 && new_loc_y<=-30 && new_loc_y>=b.y && new_loc_y>=d.y)
 			c.y = new_loc_y;
 		pop();
 	}
@@ -147,7 +171,7 @@ function movePoints(){
 	if (move[4]){
 		push();
 		new_loc_x = pointX_orig + mouseX-mouseX_orig;
-		if (new_loc_x>=d.x && new_loc_x<=width-30)
+		if (new_loc_x>=d.x && new_loc_x<=600)
 			e.x = new_loc_x;
 		pop();
 	}

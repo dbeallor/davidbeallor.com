@@ -172,10 +172,6 @@ function keyPressed(){
 		}
 	}
 	if (keyCode == ENTER && keysEnabled){
-		if (!game_started){
-			game_started = true;
-			interval = setInterval(updateTimer, 1000);
-		}
 		else {
 			var word_array = [];
 			last_left = reverseList(last_left);
@@ -235,6 +231,11 @@ function keyPressed(){
 function mousePressed(){
 	if (!game_loading && !game_loaded && !game_started && !game_over && !game_won && mouseX<=width && mouseY<=height){
 		game_loading = true;
+	}
+
+	if (!game_started && game_loaded){
+		game_started = true;
+		interval = setInterval(updateTimer, 1000);
 	}
 }
 
@@ -475,8 +476,7 @@ function displayStart(){
 	fill(0);
 	textAlign(CENTER,CENTER);
 	textSize(18);
-	text("<ENTER>", width/2, 360);
-	text("TO START", width/2, 380);
+	text("< click to start >", width/2, 370);
 	pop();
 
 }

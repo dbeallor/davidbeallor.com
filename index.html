@@ -5,7 +5,6 @@
     <title>David Beallor</title>
      <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <script src="https://use.fontawesome.com/f172b51bba.js"></script>
 
     <!-- Optional theme -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
@@ -149,7 +148,6 @@
                                 <span class="icon-bar"></span>
                             </button>
                             <a class="navbar-brand type-font" href="#" style="color:white;">David Beallor</a>
-                            <a  target="_blank" href="https://www.linkedin.com/in/david-beallor-02b61912b/"><i class='fa fa-linkedin-square fa-2x linkedin-icon'></i></a>
                         </div>
 
                         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -157,6 +155,7 @@
                             <ul class="nav navbar-nav">
                                 <li class="active type-font"><a href="#">Projects<span class="sr-only">(current)</span></a></li>
                                 <li class="type-font"><a href="resume.pdf" target="_blank">Resume</a></li>
+                                <li class="type-font"><a href="linkedin.com/in/david-beallor-02b61912b/" target="_blank">LinkedIn</a></li>
                             </ul>
                         </div><!-- /.navbar-collapse -->
                     </div><!-- /.container-fluid -->
@@ -185,17 +184,17 @@
                         <div class="panel-heading panel-heading-custom">
                         </div>
                         <div class="panel-body">
-                            <div class="col-sm-8 col-lg-8">
-                                <h3 class="type-font" style="color:white;">L-Systems - A Fractal Generator</h1>
-                                <p class="type-font description">In 1968, Hungarian biologist Aristid Lindenmayer introduced a system that converts strings of characters into geometric shapes. The L-System describes a beautiful isomorphism between the string,</p>
-                                <p class="type-font description" style="text-align: center;">"F[++F-F-F][--F+F+F]"</p>
-                                <p class="type-font description"> and the tree structure seen in the image provided. To translate, move forward and draw a line for each 'F', save branch points and return to them with '[' and ']', and rotate with '+' and '-'. Repeatedly replacing each 'F' with a copy of the string itself yields a beautiful fractal structure. Using this GUI, you can play around with different strings and see what fractals they lead to!</p>
+                            <div class="col-sm-8 col-lg-8">        
+                                <h3 class="type-font" style="color:white;">Fractal Trees - A Fractal Playground</h1>
+                                <p class="type-font description">My first introduction to fractals was a tree branching example that went something like this...</p> 
+                                <p class="type-font description">Consider a straight line, and a function that appends two branches at a certain angle to the end of that line. Now call that function on the two new branches, and on the four new branches after that, and so on and so forth. The resulting structure is a beautiful, tree-like fractal!</p>
+                                <p class="type-font description"> This GUI allows the user to play around with the angle, colour, and sizing of the branches to dynamically create new fractal trees using only sliders.</p>
                             </div>
                             <div class="col-sm-4 col-lg-4">
-                                <img class="icon-lsystem" src="LSystemTrees/example.png" height="100%" width="100%"></img>
+                                <img class="icon-lsystem" src="FractalTrees/example.png" height="100%" width="100%"></img>
 
                                 <!-- Trigger the modal with a button -->
-                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/lsystems.html';">Visit</button>
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/trees.html';">Visit</button>
                             </div>
                         </div>
                     </div>
@@ -220,17 +219,17 @@
                         <div class="panel-heading panel-heading-custom">
                         </div>
                         <div class="panel-body">
-                            <div class="col-sm-8 col-lg-8">        
-                                <h3 class="type-font" style="color:white;">Fractal Trees - A Fractal Playground</h1>
-                                <p class="type-font description">My first introduction to fractals was a tree branching example that went something like this...</p> 
-                                <p class="type-font description">Consider a straight line, and a function that appends two branches at a certain angle to the end of that line. Now call that function on the two new branches, and on the four new branches after that, and so on and so forth. The resulting structure is a beautiful, tree-like fractal!</p>
-                                <p class="type-font description"> This GUI allows the user to play around with the angle, colour, and sizing of the branches to dynamically create new fractal trees using only sliders.</p>
+                            <div class="col-sm-8 col-lg-8">
+                                <h3 class="type-font" style="color:white;">L-System Trees - A Fractal Generator</h1>
+                                <p class="type-font description">In 1968, Hungarian biologist Aristid Lindenmayer introduced a system that converts strings of characters into geometric shapes. The L-System describes a beautiful isomorphism between the string,</p>
+                                <p class="type-font description" style="text-align: center;">"F[++F-F-F][--F+F+F]"</p>
+                                <p class="type-font description"> and the tree structure seen in the image provided. To translate, move forward and draw a line for each 'F', save branch points and return to them with '[' and ']', and rotate with '+' and '-'. Repeatedly replacing each 'F' with a copy of the string itself yields a beautiful fractal structure. Using this GUI, you can play around with different strings and see what fractals they lead to!</p>
                             </div>
                             <div class="col-sm-4 col-lg-4">
-                                <img class="icon-lsystem" src="FractalTrees/example.png" height="100%" width="100%"></img>
+                                <img class="icon-lsystem" src="LSystemTrees/example.png" height="100%" width="100%"></img>
 
                                 <!-- Trigger the modal with a button -->
-                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/trees.html';">Visit</button>
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/lsystems.html';">Visit</button>
                             </div>
                         </div>
                     </div>
