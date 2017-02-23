@@ -171,39 +171,37 @@ function keyPressed(){
 			}
 		}
 	}
-	if (keyCode == ENTER && keysEnabled){
-		else {
-			var word_array = [];
-			last_left = reverseList(last_left);
-			for (var j=0; j<next_open; j++){
-				for (var i=0; i<letters.length; i++){
-					if (letters[i].pos.y == slot_y && letters[i].pos.x == slot_x[j]){
-						keysEnabled = false;
-						append(word_array, letters[i].l);
-						letters[i].setTarget(slot_x[last_left[last_left.length-1]],letter_y);
-						letters[i].beingUsed = false;
-						last_left.splice(last_left.length-1,1);
-					}
+	if (keyCode == ENTER && keysEnabled && game_started){
+		var word_array = [];
+		last_left = reverseList(last_left);
+		for (var j=0; j<next_open; j++){
+			for (var i=0; i<letters.length; i++){
+				if (letters[i].pos.y == slot_y && letters[i].pos.x == slot_x[j]){
+					keysEnabled = false;
+					append(word_array, letters[i].l);
+					letters[i].setTarget(slot_x[last_left[last_left.length-1]],letter_y);
+					letters[i].beingUsed = false;
+					last_left.splice(last_left.length-1,1);
 				}
 			}
-			var word = join(word_array,"");
-			console.log(word);
-			var flag = true;
-			for (var i=0; i<words.length; i++){
-				if (words[i] === word){
-					guessed[i] = true;
-				}
-				if (!guessed[i]){
-					flag = false;
-				}
+		}
+		var word = join(word_array,"");
+		console.log(word);
+		var flag = true;
+		for (var i=0; i<words.length; i++){
+			if (words[i] === word){
+				guessed[i] = true;
 			}
-			if(flag){
-				game_won = true;
-				clearInterval(interval);
+			if (!guessed[i]){
+				flag = false;
 			}
-			next_open = 0;
-			console.log(guessed);
-		}	
+		}
+		if(flag){
+			game_won = true;
+			clearInterval(interval);
+		}
+		next_open = 0;
+		console.log(guessed);	
 	}
 	if (key == ' ' && keysEnabled && last_left.length==0){
 		shuffleLetters();
