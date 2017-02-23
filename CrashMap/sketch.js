@@ -23,8 +23,8 @@ function setup() {
 	crashes = getData();
 	// Create the GUI
 	sliderRange(2000, 2016, 1);
-	gui = createGui('CHOOSE YEAR ___ < drag me >');
-	gui.addGlobals('Show_All_Years','yr');
+	gui = createGui('CHOOSE YEAR');
+	gui.addGlobals('yr','Show_All_Years');
 }
 
 function draw(){
