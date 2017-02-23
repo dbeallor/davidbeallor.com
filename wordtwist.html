@@ -168,76 +168,6 @@
                         <div class="panel-heading panel-heading-custom">
                         </div>
                         <div class="panel-body">
-                            <div class="col-sm-8 col-lg-8">        
-                                <h3 class="type-font" style="color:white;">21st Century Aviation Accidents - A Data Visualization</h1>
-                                <p class="type-font description">Plane crashes are one of those things that everyone tells themselves happen extremely rarely, especially right before a flight. Indeed with thousands of flights taking off each hour from airports around the world, there have only been 142 crashes since 2000 that have killed more than ten people; quite a miniscule fraction.</p>
-                                <p class="type-font description">All data was collected from the US National Transportation Safety Board database on aviation accidents. The visualization was created with p5.js, with some help from the MapBox API.</p>
-                            </div>
-                            <div class="col-sm-4 col-lg-4">
-                                <img class="icon-lsystem" src="CrashMap/example.png" height="100%" width="100%"></img>
-
-                                <!-- Trigger the modal with a button -->
-                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/crash.html';">Visit</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel panel-default">
-                        <div class="panel-heading panel-heading-custom">
-                        </div>
-                        <div class="panel-body">
-                            <div class="col-sm-8 col-lg-8">        
-                                <h3 class="type-font" style="color:white;">Fractal Trees - A Fractal Playground</h1>
-                                <p class="type-font description">My first introduction to fractals was a tree branching example that went something like this...</p> 
-                                <p class="type-font description">Consider a straight line, and a function that appends two branches at a certain angle to the end of that line. Now call that function on the two new branches, and on the four new branches after that, and so on and so forth. The resulting structure is a beautiful, tree-like fractal!</p>
-                                <p class="type-font description"> This GUI allows the user to play around with the angle, colour, and sizing of the branches to dynamically create new fractal trees using only sliders.</p>
-                            </div>
-                            <div class="col-sm-4 col-lg-4">
-                                <img class="icon-lsystem" src="FractalTrees/example.png" height="100%" width="100%"></img>
-
-                                <!-- Trigger the modal with a button -->
-                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/trees.html';">Visit</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel panel-default">
-                        <div class="panel-heading panel-heading-custom">
-                        </div>
-                        <div class="panel-body">
-                            <div class="col-sm-8 col-lg-8">
-                                <h3 class="type-font" style="color:white;">L-Systems - A Fractal Generator</h1>
-                                <p class="type-font description">In 1968, Hungarian biologist Aristid Lindenmayer introduced a system that converts strings of characters into geometric shapes. The L-System describes a beautiful isomorphism between the string,</p>
-                                <p class="type-font description" style="text-align: center;">"F[++F-F-F][--F+F+F]"</p>
-                                <p class="type-font description"> and the tree structure seen in the image provided. To translate, move forward and draw a line for each 'F', save branch points and return to them with '[' and ']', and rotate with '+' and '-'. Repeatedly replacing each 'F' with a copy of the string itself yields a beautiful fractal structure. Using this GUI, you can play around with different strings and see what fractals they lead to!</p>
-                            </div>
-                            <div class="col-sm-4 col-lg-4">
-                                <img class="icon-lsystem" src="LSystemTrees/example.png" height="100%" width="100%"></img>
-
-                                <!-- Trigger the modal with a button -->
-                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/lsystems.html';">Visit</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel panel-default">
-                        <div class="panel-heading panel-heading-custom">
-                        </div>
-                        <div class="panel-body">
-                            <div class="col-sm-8 col-lg-8">
-                                <h3 class="type-font" style="color:white;">Koch Snowflakes - A Fractal Generator</h1>
-                                <p class="type-font description">As a Mathematics and Computer Engineering student, my fascination with fractals is probably not too surprising. The Koch Snowflake is one of my favorite fractals, which takes a seed and replaces each line within it with a copy of itself.</p>
-                                <p class="type-font description"> Play around with different seeds and see what cool fractals you can come up with!</p>
-                            </div>
-                            <div class="col-sm-4 col-lg-4">
-                                <img class="icon2048" src="KochFractals/example.png" height="100%" width="100%"></img>
-
-                                <!-- Trigger the modal with a button -->
-                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/koch.html';">Visit</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel panel-default">
-                        <div class="panel-heading panel-heading-custom">
-                        </div>
-                        <div class="panel-body">
                             <div class="col-sm-8 col-lg-8">
                                 <h3 class="type-font" style="color:white;">Word Twist - A Word Puzzler</h1>
                                 <p class="type-font description">For the other crossword fanatics out there who lack a morning newspaper to get their fix, here's my favorite word puzzler.</p>
@@ -247,26 +177,25 @@
                                 <img class="icon2048" src="WordTwist/example.png" height="100%" width="100%"></img>
 
                                 <!-- Trigger the modal with a button -->
-                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/wordtwist.html';">Visit</button>
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal">Open Module</button>
                             </div>
-                        </div>
-                    </div>
-                    <div class="panel panel-default">
-                        <div class="panel-heading panel-heading-custom">
-                        </div>
-                        <div class="panel-body">
-                            <div class="col-sm-8 col-lg-8">
-                                <h3 class="type-font">2048 - A Dynamic Puzzle Game</h1>
-                                <p class="type-font description">I have always been a sucker for a good puzzle game, and when this game went viral a few years back, I know I wasn't the only one who played it for hours on end.</p>
-                                <p class="type-font description"> For those who are not familiar with the game, the numbered tiles can be slid around in all four directions using the arrow keys. When two tiles of the same value collide, they merge and sum together in value. The objective of the game is to sum together enough tiles to create one with value 2048.</p>
-                            </div>
-                            <div class="col-sm-4 col-lg-4">
-                                <img class="icon2048" src="2048/example.png" height="100%" width="100%"></img>
 
-                                <!-- Trigger the modal with a button -->
-                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/2048.html';">Visit</button>
+                            <!-- Modal -->
+                            <div id="myModal" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-dialog-2048">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title type-font">Word Twist</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <iframe src="WordTwist/index.html" height="500px" width="500px" style="border:0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </div>                 
                     </div>
                 </div>
             </div>
