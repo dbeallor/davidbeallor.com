@@ -12,9 +12,10 @@ var space = false;
 var game_started = false;
 var game_over = [0, 0];
 var hidden = false;
+var canvas_size = [520, 550];
 
 function setup() {
-	createCanvas(520, 520);
+	createCanvas(canvas_size[0], canvas_size[1]);
 	background(51);
 	loadTiles();
 	setTypes();
@@ -35,6 +36,8 @@ function draw() {
 
 	if ((game_over[0] || game_over[1]) && !hidden)
 		displayEnd();
+
+	instructions();
 }
 
 function mouseClicked(){
@@ -46,6 +49,9 @@ function mouseClicked(){
 			}
 		}
 	}
+
+	if(!game_started && mouseX >= 0 && mouseY >= 0 && mouseX <= canvas_size[0] && mouseY <= canvas_size[1])
+		game_started = true;
 }
 
 function checkForWin(){
@@ -70,10 +76,6 @@ function keyPressed(){
 
 	if (key == 'H' && (game_over[0] || game_over[1])){
 		hidden ? hidden = false : hidden = true;
-	}
-
-	if (keyCode == ENTER && !game_started){
-		game_started = true;
 	}
 }
 
@@ -149,7 +151,7 @@ function displayStart(){
 		textStyle(BOLD);
 		text("MINESWEEPER", 260, 250);
 		textSize(12);
-		text("press < enter > to begin", 260, 275);
+		text("< click > to begin", 260, 275);
 	pop();
 }
 
@@ -178,5 +180,13 @@ function displayEnd(){
 		textSize(12);
 		text("press < r > to restart", 260, 270);
 		text("press < h > to hide dialog box", 260, 285);
+	pop();
+}
+
+function instructions(){
+	push();
+		textAlign(CENTER, CENTER);
+		fill(230);
+		text("press < enter > to toggle flag mode", canvas_size[0] / 2, 530);
 	pop();
 }
