@@ -87,6 +87,11 @@
                 width: 850px;
             }
 
+            .modal-dialog-tetris{
+                height:460px;
+                width: 660px;
+            }
+
             .modal-header{
                 background: rgb(101,101,101);
                 border:0;
@@ -169,28 +174,28 @@
                         </div>
                         <div class="panel-body">
                             <div class="col-sm-8 col-lg-8">        
-                                <h3 class="type-font" style="color:white;">Aviation Accidents - A Data Visualization</h1>
-                                <p class="type-font description">In searching the web for datasets to play around with, I stumbled upon this historical record of aviation accidents. With thousands of flights taking off each hour from airports around the world, there have only been 142 crashes since 2000 that have killed more than ten people; quite a miniscule fraction. </p>
-                                <p class="type-font description">All data was collected from the US National Transportation Safety Board database on aviation accidents. The visualization was created with p5.js, with some help from the MapBox API.</p>
+                                <h3 class="type-font" style="color:white;">Tetris - Another Classic</h1>
+                                <p class="type-font description">For this project, I thought I'd try and tackle the classic arcade game, Tetris. This is definitely the biggest project I've taken on up until now, but it turned out to be a really awesome excercise in object oriented programming.</p>
+                                <p class="type-font description">The whole reason I keep these projects going is to keep my coding skills sharp. The concepts you learn when taking on a project like this always seem to come up again at some unexpected time. That realization of analogy between seemingly different problems is what keeps me working on these.</p>
                             </div>
                             <div class="col-sm-4 col-lg-4">
-                                <img class="icon-lsystem" src="CrashMap/example.png" height="100%" width="100%"></img>
+                                <img class="icon-lsystem" src="Tetris/example.png" height="100%" width="100%"></img>
 
                                 <!-- Trigger the modal with a button -->
-                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal">Open Module</button>
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal4">Open Module</button>
                             </div>
 
                             <!-- Modal -->
-                            <div id="myModal" class="modal fade" role="dialog">
-                                <div class="modal-dialog modal-dialog-crash">
+                            <div id="myModal4" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-dialog-trees">
                                     <!-- Modal content-->
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                            <h4 class="modal-title type-font">Aviation Accidents</h4>
+                                            <h4 class="modal-title type-font">Tetris</h4>
                                         </div>
                                         <div class="modal-body">
-                                            <iframe src="CrashMap/index.html" height="500px" width="950px" style="border:0"></iframe>
+                                            <iframe src="Tetris/index.html" height="460px" width="660" style="border:0"></iframe>
                                         </div>
                                     </div>
                                 </div>
