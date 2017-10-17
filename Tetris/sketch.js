@@ -105,6 +105,7 @@ function keyPressed(){
 
 		line_count = 0;
 		level = 1;
+		speed = 1000;
 	}
 
 	if (!game_over && game_started && key == 'P'){
