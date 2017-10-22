@@ -58,6 +58,7 @@ function draw() {
 			level++;
 			threshhold += 5 * level;
 			speed = speed / 1.5;
+			grid.speed = speed;
 		}
 		grid.addBlock(queue.block);
 		queue.addBlock(new Block(block_types));
@@ -96,16 +97,17 @@ function keyPressed(){
 		game_over = false;
 		game_started = false;
 
+		line_count = 0;
+		level = 1;
+		speed = 1000;
+
 		grid = new Grid(grid_size, getGridCoords(), tile_size, speed);
 		grid.initialize();
 
 		queue = new Queue(new Block(block_types), getQueueCoords());
 		queue.addBlock(new Block(block_types));	
-		queue.initialize();
-
-		line_count = 0;
-		level = 1;
-		speed = 1000;
+		queue.initialize();	
+		
 	}
 
 	if (!game_over && game_started && key == 'P'){
