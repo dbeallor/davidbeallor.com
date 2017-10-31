@@ -142,3 +142,11 @@ function zoom(new_x, new_y){
 	x_range = new_x;
 	y_range = new_y;
 }
+
+function keyPressed(){
+	if (key == 'R'){
+		x_range = [-1.5, 0.5];
+		y_range = [-1, 1];
+		refresh_drawing();
+	}
+}
