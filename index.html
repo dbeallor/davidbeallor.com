@@ -171,6 +171,25 @@
                         </div>
                         <div class="panel-body">
                             <div class="col-sm-8 col-lg-8">
+                                <h3 class="type-font" style="color:white;">Copresence Networks - A Data Visualization</h1>
+                                <p class="type-font description">When analyzing the behaviour of a group of individuals to monitor for suspicious activity, it can be useful to keep track of pairs of individuals who often perform the same actions simultaneously. For the purposes of this project, let's assume we have a list of flights, each containing the ids of the passengers who were on that given flight. What we want to find out from this is how many flights each pair of passengers took together.</p>
+                                <p class="type-font description"> This project aimed to visualize the results of this endeavour. To accomplish this, a circle is drawn for each passenger, each pair of passengers is connected with a line whose color corresponds to the number of flights the passengers shared. Only those pairs of passengers who had co-occurences over a given threshold are shown, and the threshold can be changed with a slider.</p>
+                                <p class="type-font description">The reason I find this problem so intresting is in the elegance of it's solution. In the currrent context, it seems like there should be no better way than to exhaustively search through each pair of individuals and count the number of co-occurences. The key to unlocking the solution to this problem is in translating the data into a different, but equivalent form.</p>
+                                <p class="type-font description">Assign each passenger a bit vector. For a given passenger, each bit in its vector indicates whether or not the passenger was on that given flight. Stack all these bit vectors next to each other and you get a matrix with height and width corresponding to the number of flights and passengers respectively. Multiply this matrix by the transpose of itself. The matrix left with then corresponds to a weighted graph with edges weighted according to the number of co-occurences between each pair of passengers. Now there are algorithms out there that speed up matrix multiplication, like Strassen's algorithm for example. This shows that you can do better than brute forcing it after all!</p> 
+                            </div>
+                            <div class="col-sm-4 col-lg-4">
+                                <img class="icon-lsystem" src="Copresence/example.png" height="100%" width="100%"></img>
+
+                                <!-- Trigger the modal with a button -->
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" onclick="window.location.href = 'http://www.davidbeallor.com/copresence.html';">Take Me There</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-heading-custom">
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-sm-8 col-lg-8">
                                 <h3 class="type-font" style="color:white;">The Mandelbrot Set - A Fractal Journey</h1>
                                 <p class="type-font description">If I had to choose one concept in computer science with the coolest applications, I would definitely have to go with recursive programming. Not only does recursion unlock low-complexity solutions to what would otherwise be high-complexity, iterative processes, it also is the key to visualizing a type of geometry known as fractal geometry.</p>
                                  <p class="type-font description">Fractal Gemoetry was the brainchild of Benoit Mandelbrot, a 20th century mathematician. It is used to describe the geometry of shapes that are self similar at different scales. The fractal in this module is named after Mandelbrot, and I especially love the chaotic visuals in this one. </p>
