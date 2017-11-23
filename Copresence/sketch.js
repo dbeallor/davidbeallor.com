@@ -50,6 +50,22 @@ function draw() {
 	for (var i = 0; i < nodes.length; i++)
 		if(show_me[i])
 			nodes[i].show();
+
+	for (var i = 0; i < nodes.length; i++){
+		if(show_me[i]){
+			if (dist(mouseX - width / 2, mouseY - height / 2, nodes[i].pos.x, nodes[i].pos.y) <= nodes[i].size){
+				push();
+					fill(200);
+					noStroke();
+					rectMode(CENTER);
+					rect(mouseX + 15, mouseY - 19, 25, 15);
+					fill(0);
+					textAlign(CENTER);
+					text(nodes[i].id, mouseX + 15, mouseY - 15);
+				pop();
+			}
+		}
+	}
 }
 
 function refreshThreshold(){
@@ -57,7 +73,6 @@ function refreshThreshold(){
 		show_me[i] = false
 
 	for (var i = 0; i < num_passengers; i++){
-		edges[i] = [];
 		for (var j = i + 1; j < num_passengers; j++) {
 			if ((parseInt(copresences[i][j])) >= threshold){
 				show_me[i] = true;

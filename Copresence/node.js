@@ -4,6 +4,7 @@ function Node(id, num){
 	this.num = num;
 	this.angle = (this.num * 2 * Math.PI) / num_nodes;
 	this.pos = createVector(this.r*cos(this.angle), this.r*sin(this.angle));
+	this.size = 5;
 
 	this.show = function(){
 		push();
