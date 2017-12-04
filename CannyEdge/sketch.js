@@ -1,7 +1,7 @@
 var img;
 var filepaths = ['guitar.png', 'face.jpg', 'mandrill.jpg', 'lion.png', 'skyline.jpg']; 
-var min_thresholds = [100, 100, 100, 100, 100];
-var max_thresholds = [4500, 4500, 4500, 4500, 4500];
+var min_thresholds = [400, 300, 300, 200, 275];
+var max_thresholds = [3500, 2300, 3000, 1300, 1200];
 var images = [];
 var grads = [];
 var weak = [];
