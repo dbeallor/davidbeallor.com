@@ -1,7 +1,7 @@
 var img;
 var filepaths = ['guitar.png', 'face.jpg', 'mandrill.jpg', 'lion.png', 'skyline.jpg']; 
-var min_thresholds = [400, 300, 300, 200, 275];
-var max_thresholds = [3500, 2300, 3000, 1300, 1200];
+var min_thresholds = [10, 10, 10, 10, 10];
+var max_thresholds = [1000, 1000, 1000, 1000, 1000];
 var images = [];
 var grads = [];
 var weak = [];
@@ -62,6 +62,9 @@ function draw() {
 
 	if (ready & (thresh_weak != prev_thresh_weak || thresh_strong != prev_thresh_strong)){
 		ready = false;
+		console.log('--------');
+		console.log(thresh_strong);
+		console.log(thresh_weak);
 		applyThresholds();
 		keepChains();
 	}
@@ -130,7 +133,7 @@ function keepChains(){
 			if (strong[i][j] == 1){
 				for (var x = -2; x <= 2; x++){
 					for (var y = -2; y <= 2; y++){
-						if (i + x > 0 && j + y > 0 && i + x < width && j + y < height){
+						if (i + x >= 0 && j + y >= 0 && i + x < width && j + y < height){
 							if (weak[i + x][j + y] == 1 && link[i + x][j + y] == 0)
 								ripple(i + x, j + y);
 						}
@@ -148,7 +151,7 @@ function ripple(i, j){
 
 	for (var x = -2; x <= 2; x++){
 		for (var y = -2; y <= 2; y++){
-			if (i + x > 0 && j + y > 0 && i + x < width && j + y < height){
+			if (i + x >= 0 && j + y >= 0 && i + x < width && j + y < height){
 				if (weak[i + x][j + y] == 1 && link[i + x][j + y] == 0)
 					ripple(i + x, j + y);
 			}
@@ -214,12 +217,12 @@ function keepMaximizers(){
 
 			neighbours = getNeighbours(grad[1], i, j);
 
-			if(neighbours[0][0] > 0 && neighbours[0][1] > 0 && neighbours[0][0] < width && neighbours[0][1] < height)
+			if(neighbours[0][0] >= 0 && neighbours[0][1] >= 0 && neighbours[0][0] < width && neighbours[0][1] < height)
 				grad1 = grads[neighbours[0][0]][neighbours[0][1]][0];
 			else
 				grad1 = -1;
 
-			if(neighbours[1][0] > 0 && neighbours[1][1] > 0 && neighbours[1][0] < width && neighbours[1][1] < height)
+			if(neighbours[1][0] >= 0 && neighbours[1][1] >= 0 && neighbours[1][0] < width && neighbours[1][1] < height)
 				grad2 = grads[neighbours[1][0]][neighbours[1][1]][0];
 			else
 				grad2 = -1;
@@ -281,6 +284,7 @@ function getNeighbours(angle, i, j) {
 }
 
 function getGradients() {
+	blur();
 	var gx = [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]];
 	var gy = [[1, 2, 1], [0, 0, 0], [-1, -2, -1]];
 	loadPixels();
@@ -308,6 +312,34 @@ function getGradients() {
 	}
 }
 
+function blur(){
+	var g = 
+	[[1.0/273, 4.0/273, 7.0/273, 4.0/273, 1.0/273],
+	 [4.0/273, 16.0/273, 26.0/273, 16.0/273, 4.0/273],
+	 [7.0/273, 26.0/273, 41.0/273, 26.0/273, 7.0/273],
+	 [4.0/273, 16.0/273, 26.0/273, 16.0/273, 4.0/273],
+	 [1.0/273, 4.0/273, 7.0/273, 4.0/273, 1.0/273]];
+
+	var val;
+
+	loadPixels();
+	for (var i = 0; i < width; i++){
+		for (var j = 0; j < height; j++){
+			val = 0;
+			for (var x = 0; x < 5; x++){
+				for (var y = 0; y < 5; y++){
+					if (i + x - 2 >= 0 && j + y - 2 >= 0 && i + x - 2 < width && j + y - 2 < height)
+						val += int(g[x][y] * getPixelVal(i + x - 2, j + y - 2));
+				}
+			}
+			if (val > 255)
+				val = 255;
+			setPixel(i, j, val);
+		}
+	}
+	updatePixels();
+}
+
 function getPixelVal(i, j) {
 	var d = pixelDensity();
 	var avg = 0;
@@ -320,7 +352,7 @@ function getPixelVal(i, j) {
 	    avg += pixels[idx + 2];
 	  }
 	}
-	return avg * 1.0 / 3
+	return avg * 1.0 / (3 * pow(d, 2))
 }
 
 function setPixel(i, j, fill) {
