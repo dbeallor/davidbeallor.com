@@ -329,8 +329,7 @@ function blur(){
 						val += int(g[x][y] * getPixelVal(i + x - 2, j + y - 2));
 				}
 			}
-			if (val > 255)
-				val = 255;
+			val > 255 ? val = 255 : null;
 			setPixel(i, j, val);
 		}
 	}
