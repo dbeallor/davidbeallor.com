@@ -61,9 +61,6 @@ function draw() {
 
 	if (ready & (thresh_weak != prev_thresh_weak || thresh_strong != prev_thresh_strong)){
 		ready = false;
-		console.log('----------');
-		console.log(thresh_strong);
-		console.log(thresh_weak);
 		applyThresholds();
 		keepChains();
 	}
