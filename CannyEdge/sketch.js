@@ -1,7 +1,7 @@
 var img;
 var filepaths = ['guitar.png', 'face.jpg', 'mandrill.jpg', 'lion.png', 'skyline.jpg']; 
-var min_thresholds = [10, 10, 10, 10, 10];
-var max_thresholds = [1000, 1000, 1000, 1000, 1000];
+var min_thresholds = [10, 35, 60, 35, 35];
+var max_thresholds = [510, 235, 210, 185, 235];
 var images = [];
 var grads = [];
 var weak = [];
@@ -33,8 +33,8 @@ function setup() {
 	img_num = img_ctr % images.length;
 	img = images[img_num];
 
-	strong_slider = createSlider(min_thresholds[img_num], max_thresholds[img_num], min_thresholds[img_num] + 1000, 25);
-	weak_slider = createSlider(min_thresholds[img_num], max_thresholds[img_num], min_thresholds[img_num] + 300, 25);
+	strong_slider = createSlider(min_thresholds[img_num], max_thresholds[img_num], 180, 5);
+	weak_slider = createSlider(min_thresholds[img_num], max_thresholds[img_num], 70, 5);
 
 	strong_slider.position(15, 25);
 	weak_slider.position(15, 60);
