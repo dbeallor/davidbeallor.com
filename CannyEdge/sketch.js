@@ -1,7 +1,7 @@
 var img;
 var filepaths = ['guitar.png', 'face.jpg', 'mandrill.jpg', 'lion.png', 'skyline.jpg']; 
-var min_thresholds = [500, 300, 1500, 500, 520];
-var max_thresholds = [3500, 2500, 3000, 2500, 2500];
+var min_thresholds = [100, 100, 100, 100, 100];
+var max_thresholds = [4500, 4500, 4500, 4500, 4500];
 var images = [];
 var grads = [];
 var weak = [];
@@ -61,6 +61,9 @@ function draw() {
 
 	if (ready & (thresh_weak != prev_thresh_weak || thresh_strong != prev_thresh_strong)){
 		ready = false;
+		console.log('----------');
+		console.log(thresh_strong);
+		console.log(thresh_weak);
 		applyThresholds();
 		keepChains();
 	}
@@ -173,7 +176,6 @@ function applyThresholds(){
 			}
 		}
 	}
-	console.log(strong)
 }
 
 function keyPressed(){
