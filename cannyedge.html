@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>David Beallor</title>
+     <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://use.fontawesome.com/f172b51bba.js"></script>
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/p5.js"></script>
+</head>
+<body class = "backing">
+    <style>
+        @media (max-width: 768px){.navbar-fixed-side{margin-left:-15px;margin-right:-15px}}@media (min-width: 768px){.navbar-fixed-side{position:fixed;margin:0 -15px;height:100vh;width:inherit;overflow:auto;border-top-width:0;border-bottom-width:0;border-radius:0}.navbar-fixed-side .container,.navbar-fixed-side .container-fluid{width:auto;padding-left:0;padding-right:0}.navbar-fixed-side .navbar-header{float:none}.navbar-fixed-side .navbar-brand{height:auto}.navbar-fixed-side>.container .navbar-brand,.navbar-fixed-side>.container-fluid .navbar-brand{margin-left:0}.navbar-fixed-side .navbar-collapse{width:100%;border-top:1px solid #e7e7e7}.navbar-fixed-side .navbar-nav{float:none;margin:0 -15px}.navbar-fixed-side .navbar-nav>li{float:none}.navbar-fixed-side .navbar-nav>li>a{padding-top:10px;padding-bottom:10px;border-bottom:1px solid #e7e7e7}.navbar-fixed-side .navbar-form{margin:0;margin-left:-15px;margin-right:-15px;padding:10px 15px;border-bottom:1px solid #e7e7e7}.navbar-fixed-side .navbar-text{float:none;margin-left:0;margin-right:0}.navbar-fixed-side .navbar-left,.navbar-fixed-side .navbar-right{float:none !important}.navbar-fixed-side .navbar-nav .dropdown-menu{position:static;float:none;width:auto;margin-top:0;background-color:transparent;border:0;box-shadow:none;border-bottom:1px solid #e7e7e7}.navbar-fixed-side .navbar-nav .dropdown-menu>li>a,.navbar-fixed-side .navbar-nav .dropdown-menu .dropdown-header{padding:5px 15px 5px 25px}.navbar-fixed-side .navbar-nav .dropdown-menu>li>a{line-height:20px;color:#777}.navbar-fixed-side .navbar-nav .dropdown-menu>li>a:hover,.navbar-fixed-side .navbar-nav .dropdown-menu>li>a:focus{background-image:none}.navbar-fixed-side .navbar-nav .dropdown-menu>.active>a{background-color:#e7e7e7;color:#555}.navbar-fixed-side .navbar-nav>li>a:hover,.navbar-fixed-side .navbar-nav>li>a:focus,.navbar-fixed-side .navbar-nav .dropdown-menu>li>a:hover,.navbar-fixed-side .navbar-nav .dropdown-menu>li>a:focus{background-color:#f0f0f0;color:#333}.navbar-fixed-side .dropdown>.dropdown-toggle,.navbar-fixed-side .dropdown-menu>.dropdown-header{background-color:transparent !important;color:#9d9d9d !important;cursor:default;font-size:0.8em;text-transform:uppercase;border-bottom:none;padding-bottom:0}.navbar-fixed-side .dropdown-toggle .caret{display:none}.navbar-fixed-side .dropdown-menu{display:block}.navbar-fixed-side.navbar-inverse .navbar-collapse,.navbar-fixed-side.navbar-inverse .navbar-nav>li>a,.navbar-fixed-side.navbar-inverse .navbar-form,.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu{border-color:#363636}.navbar-fixed-side.navbar-inverse .divider{background-color:#363636}.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu>li>a{color:#9d9d9d}.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu>.active>a{background-color:#090909;color:#fff}.navbar-fixed-side.navbar-inverse .navbar-nav>li:not(.active)>a:hover,.navbar-fixed-side.navbar-inverse .navbar-nav>li:not(.active)>a:focus,.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu>li:not(.active)>a:hover,.navbar-fixed-side.navbar-inverse .navbar-nav .dropdown-menu>li:not(.active)>a:focus{background-color:#2f2f2f;color:#fff}.navbar-fixed-side.navbar-inverse .dropdown>.dropdown-toggle{color:#777777 !important}}
+
+             .modal-btn{
+                float:right;
+                background: #299E31;
+                border:0;
+            }
+
+            .modal-btn:hover, .modal-btn:focus{
+                float:right;
+                background: #299E31;
+                border:0; 
+                outline:none;
+            }
+
+            .panel-default{
+                background-color: rgb(51,51,51);
+                border:0;
+            }
+
+            .panel-default > .panel-heading-custom{
+                background-image: none;
+                background-color: rgb(101,101,101);
+                color: #ffffff;
+            }
+
+            .backing{
+                background-color: rgb(31,31,31);
+            }
+
+            .class2048{
+                background-color: rgb(51,51,51);
+            }
+
+            .koch-window{
+                background-color: rgb(51,51,51);
+            }
+
+            .type-font{
+                font-family: "Verdana", Verdana;
+                color: white;
+            }
+
+            .modal-dialog-koch{
+                height:450px;
+                width: 750px;
+            }
+
+            .modal-dialog-2048{
+                height:500px;
+                width: 530px;
+            }
+
+            .modal-dialog-crash{
+                height:525px;
+                width: 975px;
+            }
+
+            .modal-dialog-lsystem{
+                height:550px;
+                width: 850px;
+            }
+
+            .modal-dialog-trees{
+                height:475px;
+                width: 850px;
+            }
+
+            .modal-dialog-tetris{
+                height:700px;
+                width: 500px;
+            }
+
+            .modal-dialog-mandelbrot{
+                height:500px;
+                width: 530px;
+            }
+
+            .modal-dialog-copresence{
+                height:650px;
+                width: 650px;
+            }
+
+            .modal-dialog-cannyedge{
+                height:512px;
+                width: 512px;
+            }
+
+            .modal-header{
+                background: rgb(101,101,101);
+                border:0;
+            }
+
+            .modal-body{
+                background-color:rgb(51,51,51);
+            }
+
+            .close:hover, .close:focus{
+                outline:none;
+            }
+
+            .description{
+                color:rgb(190,190,200);
+                padding-top: 15px;
+                text-align: justify;
+                text-justify: inner-word;
+            }
+
+            .icon2048{
+                padding-bottom: 10px;
+                float:right;
+            }
+
+            .icon-lsystem{
+                padding-top: 20px;
+                padding-bottom: 30px;
+            }
+
+            .modal-title{
+                text-align: center;
+            }
+
+            .jumbotron{
+                background-color: rgb(101,101,101); 
+            }
+            .linkedin-icon{
+                color: #1B942D;
+                padding-top: 12px;
+                float: center;
+            }
+
+            .linkedin-icon:hover{
+                color: rgb(200,200,200);
+            }
+             
+    </style>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-sm-3 col-lg-2">
+                <nav class="navbar navbar-default navbar-fixed-side navbar-inverse">
+                    <div class="container-fluid">
+                        <!-- Brand and toggle get grouped for better mobile display -->
+                        <div class="navbar-header">
+                            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                                <span class="sr-only">Toggle navigation</span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </button>
+                            <a class="navbar-brand type-font" href="http://davidbeallor.com" style="color:white;">David Beallor</a>
+                        </div>
+
+                        <!-- Collect the nav links, forms, and other content for toggling -->
+                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                            <ul class="nav navbar-nav">
+                                <li class="active type-font"><a href="http://davidbeallor.com">Projects<span class="sr-only">(current)</span></a></li>
+                                <li class="type-font"><a href="resume.pdf" target="_blank">Resume</a></li>
+                                <li class="type-font"><a href="http://linkedin.com/in/david-beallor-02b61912b/" target="_blank">LinkedIn</a></li>
+                            </ul>
+                        </div><!-- /.navbar-collapse -->
+                    </div><!-- /.container-fluid -->
+                </nav>
+            </div>
+            <div class="col-sm-9 col-lg-9" style="padding-top: 15px;">
+                <div class="panel-group">
+                    <div class="panel panel-default">
+                        <div class="panel-heading panel-heading-custom">
+                        </div>
+                        <div class="panel-body">
+                            <div class="col-sm-8 col-lg-8">
+                                <h3 class="type-font" style="color:white;">Canny Edge Detection</h1>
+                                <p class="type-font description">Here's a cool algorithm for detecting edges in an image called "Canny Edge Detection." I have included sliders to allow the user to manipulate the thresholds involved in determining edges. If you want to learn more about how Canny Edge Detection works, follow this link:</p>
+                                </div>
+                            <div class="col-sm-4 col-lg-4">
+                                <img class="icon-lsystem" src="CannyEdge/example.png" height="100%" width="100%"></img>
+
+                                <!-- Trigger the modal with a button -->
+                                <button type="button" class="btn btn-info btn-lg modal-btn type-font" data-toggle="modal" data-target="#myModal4">Open Module</button>
+                            </div>
+
+                            <!-- Modal -->
+                            <div id="myModal4" class="modal fade" role="dialog">
+                                <div class="modal-dialog modal-dialog-cannyedge">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title type-font">Copresence Networks</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <iframe src="Copresence/index.html" height="512px" width="512px" style="border:0"></iframe>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                  
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
