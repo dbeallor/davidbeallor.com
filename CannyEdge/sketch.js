@@ -19,6 +19,7 @@ var weak_slider;
 var img_ctr = 0;
 var link = [];
 var ready = false;
+var started = false;
 
 function preload(){
 	for (var i = 0; i < filepaths.length; i++)
@@ -87,17 +88,33 @@ function draw() {
 		pop();
 	}
 
-	push();
-		translate(width/2, height/2);
-		stroke(150);
-		fill(0);
-		rectMode(CENTER);
-		rect(width / 2 - 100, height / 2 - 22, 190, 38);
-		noStroke();
-		fill(255);
-		text('press < e > to toggle edge display', width / 2 - 190, height / 2 - 25);
-		text('press < s > to switch images', width / 2 - 175, height / 2 - 10);
-	pop();
+	if (ready && !started){
+		push();
+			translate(width/2, height/2);
+			stroke(255);
+			rectMode(CENTER);
+			fill(0);
+			rect(0, 0, 110, 30);
+			noStroke();
+			fill(255);
+			textAlign(CENTER, CENTER);
+			text('click to start', 0, 0);
+		pop();
+	}
+
+	if (ready && started){
+		push();
+			translate(width/2, height/2);
+			stroke(150);
+			fill(0);
+			rectMode(CENTER);
+			rect(width / 2 - 100, height / 2 - 22, 190, 38);
+			noStroke();
+			fill(255);
+			text('press < e > to toggle edge display', width / 2 - 190, height / 2 - 25);
+			text('press < s > to switch images', width / 2 - 175, height / 2 - 10);
+		pop();
+	}
 }
 
 function keepChains(){
@@ -176,10 +193,10 @@ function applyThresholds(){
 }
 
 function keyPressed(){
-	if (key == 'E')
+	if (started && key == 'E')
 		display_edges ? display_edges = false : display_edges = true;
 
-	if (key == 'S') {
+	if (started && key == 'S') {
 		img = images[img_ctr++ % images.length];
 		ready = false;
 		display_edges ? display_edges = false : null;
@@ -213,6 +230,11 @@ function keepMaximizers(){
 				keepers[i][j] = 0;
 		}
 	}
+}
+
+function mousePressed(){
+	if (!started && mouseX >= 0 && mouseY >= 0 && mouseX < width && mouseY < height)
+		started = true;
 }
 
 function getNeighbours(angle, i, j) {
