@@ -1,16 +1,21 @@
 function FractalEdge(node1, node2, w, t, s){
-	this.start = node1.pos;
-	this.end = node2.pos;
+	this.start = createVector(node1.pos.x, node1.pos.y);
+	this.end = createVector(node2.pos.x, node2.pos.y);
 	this.weight = w;
 	this.type = t;
 	this.stroke = s;
 
 	this.show = function(){
 		push();
-			stroke(this.stroke[0], this.stroke[1], this.stroke[2], 220);
+			stroke(this.stroke[0], this.stroke[1], this.stroke[2], 210);
 			strokeWeight(this.weight);
 			line(this.start.x, this.start.y, this.end.x, this.end.y);
 		pop();
+	}
+
+	this.setStart = function(x, y){
+		this.start.x = x;
+		this.start.y = y;
 	}
 
 	this.setEnd = function(x, y){

@@ -3,7 +3,7 @@ function Sandbox(x, y, dims){
 	this.dims = dims;
 	this.w = dims;
 	this.coords = [];
-	this.num_gridlines = 49;
+	this.num_gridlines = 99;
 	this.offset = ((this.num_gridlines + 1) / 2) - 1;
 	this.gap = this.w / (this.num_gridlines + 1);
 
@@ -19,10 +19,10 @@ function Sandbox(x, y, dims){
 		push();
 			translate(this.pos.x, this.pos.y);
 			for (var i = -this.offset * this.gap; i <= this.offset * this.gap; i += this.gap){
-				if (i == 0) 
+				if (round(i) == 0) 
 					stroke(150);
-				else if ((i / this.gap) % 2 == 0){
-					if ((i / this.gap) % 4 == 0) 
+				else if (round(i / this.gap) % 4 == 0){
+					if (round(i / this.gap) % 8 == 0) 
 						stroke(110);
 					else
 						stroke(90);
@@ -32,15 +32,10 @@ function Sandbox(x, y, dims){
 				line(i, -this.w / 2, i, this.w / 2);
 				line(-this.w / 2, i, this.w / 2, i);
 			}
-		pop();
-
-		// Outer border 
-		push();
-			translate(this.pos.x, this.pos.y);
-			noFill();
-			stroke(200);
-			rectMode(CENTER);
-			rect(0, 0, this.w, this.w)
+			// Redraw center lines
+			stroke(150);
+			line(0, -this.w / 2, 0, this.w / 2);
+			line(-this.w / 2, 0, this.w / 2, 0);
 		pop();
 	}
 }

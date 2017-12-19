@@ -1,12 +1,10 @@
 var sandbox;
-var sandbox_dims = [700, 400];
 var show_gridlines;
 var nodes;
 var edges;
 var temp_nodes;
 var temp_edges;
 var creating_seed;
-var setup_for_generator;
 var creating_generator;
 var seed_data;
 var r_seed_data;
@@ -14,155 +12,82 @@ var idx;
 var fractalize;
 var current_edge;
 var edges_drawn;
+var control_box;
+var screen_bounds = [0, 720, 3, 455];
+var load_bar;
+var edges_to_replace;
+var prev_click;
 
 function setup() {
 	createCanvas(720, 520);
 	angleMode(RADIANS);
+
 	show_gridlines = true;
+
 	creating_seed = true;
-    setup_for_generator = false;
 	creating_generator = false;
 	fractalize = false;
+
 	edges_drawn = true;
-	sandbox = new Sandbox(width / 2, height / 2, 700);
+
+	sandbox = new Sandbox(width / 2, height / 2 - 32, 720);
+
 	nodes = [];
 	edges = [];
+
 	seed_data = [];
 	r_seed_data = [];
 	types = [];
+
+	edges_to_replace = 0;
+
 	nodes[0] = new FractalNode(0, 0);
+
+	var labels = ["LOAD", "COLOR\nSCHEME", "GRID\nLINES", "HELP", "RESTART"];
+	control_box = new ControlBox(width / 2 - 2, height - 32, width-3, 60, labels.length, labels);
+
+	load_bar = new LoadBar(20, 20, 80, 10);
 }
 
 function draw() {
-	if (creating_seed){
+	if (creating_seed || creating_generator || fractalize){
 		background(51);
-	
-		fill(255); 
-		// text(mouseX + " " + mouseY, 10, 10);
-
 		if (show_gridlines)
 			sandbox.show();
+	}
 
-		nodes[nodes.length - 1].setPosition(closestGridPoint(mouseX, mouseY, sandbox.coords));
-
-		if (edges.length > 0)
-			edges[edges.length - 1].setEnd(nodes[nodes.length - 1].pos.x, nodes[nodes.length - 1].pos.y);
-
-		for (var i = 0; i < edges.length; i++)
-			edges[i].show();
-
-		for (var i = 0; i < nodes.length; i++)
-			nodes[i].show();
-		
+	if (creating_seed){
+		showPotentialNode();
+		showSeed();
 	} 
 
-	else if (setup_for_generator){
-
-		edges.splice(edges.length - 1, 1);
-		for (var i = 0; i < edges.length; i++)
-			edges[i].setWeight(1);
-
-		setup_for_generator = false;
-		creating_generator = true;
-		idx = nodes.length - 1;
-
-	}
-
 	else if (creating_generator){
-		background(51);
-	
-		fill(255); 
-		// text(mouseX + " " + mouseY, 10, 10);
-
-		if (show_gridlines)
-			sandbox.show();
-
-		if (aboveLine(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-			if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y))
-				edges[idx - 1].type = 1;
-			else 
-				edges[idx - 1].type = 0;
-		}
-		else{
-			if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y))
-				edges[idx - 1].type = 3;
-			else 
-				edges[idx - 1].type = 2;
-		}
-
-		// text(edges[idx - 1].type, 50, 90);
-
-		var result = subdivide(idx);
-		temp_nodes = result[0];
-		temp_edges = result[1];
-
-		for (var i = 0; i < idx - 1; i++)
-			edges[i].show();
-
-		for (var i = 0; i < temp_edges.length; i++)
-			temp_edges[i].show();
-
-		for (var i = idx; i < edges.length; i++)
-			edges[i].show();
-
-		for (var i = 0; i < nodes.length; i++)
-			nodes[i].show();
-
+		refreshEdgeType();
+		showSelection();
 		edges_drawn = false;
 	}
 
-	else if (fractalize){
-		background(51);
-	
-		fill(255); 
-		// text(mouseX + " " + mouseY, 10, 10);
+	else if (fractalize)
+		advance();
 
-		// text(edges.length, 50, 50);
+	else if (!edges_drawn)
+		refresh();
 
-		if (show_gridlines)
-				sandbox.show();
-
-		speed = min(100, max(1, floor(edges.length / 100)));
-		for (var i = 0; i < speed; i++){
-			update(current_edge--);
-			if (current_edge == 0){
-				fractalize = false;
-				break;
-			}
-		}
-		scaleColours();
-		for (var i = 0; i < edges.length; i++)
-			edges[i].show();
-
-		edges_drawn = false;
+	if (mouseIsPressed && !creating_seed && !creating_generator && !fractalize){
+		translateShape();
 	}
 
-	else {
-		if (!edges_drawn){
-			background(51);
-	
-			fill(255); 
-			// text(mouseX + " " + mouseY, 10, 10);
-
-			if (show_gridlines)
-				sandbox.show();
-
-			// text(edges.length, 50, 50);
-
-			for (var i = 0; i < edges.length; i++)
-				edges[i].show();
-			edges_drawn = true;
-		}
-	}
+	control_box.show();	
 }
 
 function mousePressed(){
-	if (creating_seed && withinGridBounds(mouseX, mouseY)){
+	prev_click = [mouseX, mouseY];
+	if (creating_seed && withinBounds(mouseX, mouseY, screen_bounds)){
 		nodes = append(nodes, new FractalNode(0, 0));
 		edges = append(edges, new FractalEdge(nodes[nodes.length - 2], nodes[nodes.length - 1], 2, 0, [200, 200, 200]));
 	}
 
-	if (creating_generator && withinGridBounds(mouseX, mouseY)){
+	if (creating_generator && withinBounds(mouseX, mouseY, screen_bounds)){
 		seed_data[idx-1][2] = edges[idx-1].type;
 		r_seed_data[r_seed_data.length - idx][2] = edges[idx-1].type;
 		edges.splice(idx - 1, 1);
@@ -173,6 +98,33 @@ function mousePressed(){
 			creating_generator = false;
 		}
 	}
+
+	if (withinBounds(mouseX, mouseY, control_box.bounds)){
+		if (withinBounds(mouseX, mouseY, control_box.buttons[2].bounds)){
+			show_gridlines ? show_gridlines = false : show_gridlines = true;
+			edges_drawn = false;
+		}
+
+		if (withinBounds(mouseX, mouseY, control_box.buttons[4].bounds))
+			setup();
+	}
+}
+
+function translateShape(){
+	deltaX = mouseX - prev_click[0];
+	deltaY = mouseY - prev_click[1];
+
+	prev_click = [mouseX, mouseY];
+
+	for (var i = 0; i < nodes.length; i++){
+		nodes[i].setPosition([nodes[i].pos.x + deltaX, nodes[i].pos.y + deltaY]);
+		if (i > 0){
+			edges[i-1].setStart(edges[i-1].start.x + deltaX, edges[i-1].start.y + deltaY);
+			edges[i-1].setEnd(edges[i-1].end.x + deltaX, edges[i-1].end.y + deltaY);
+		}
+	}
+
+	edges_drawn = false;
 }
 
 function keyPressed(){
@@ -180,16 +132,14 @@ function keyPressed(){
 		setup();
 
 	if (keyCode == ENTER){
-		if (creating_seed){
-			creating_seed = false;
-			setup_for_generator = true;
-			nodes.splice(nodes.length -1 , 1);
-			getSeedData();
-		}
+		if (creating_seed)
+			setupForGenerator();
 
-		if (!creating_seed && ! creating_generator && !setup_for_generator && edges.length <= 10000){
+		if (!creating_seed && !creating_generator && !fractalize && edges.length <= 10000){
 			fractalize = true;
 			current_edge = edges.length;
+			var level = floor(Math.log(edges.length) / Math.log(seed_data.length)) + 1;
+			edges_to_replace = pow(seed_data.length, level);
 		}
 	}
 
@@ -197,6 +147,113 @@ function keyPressed(){
 		show_gridlines ? show_gridlines = false : show_gridlines = true;
 		edges_drawn = false;
 	}
+}
+
+function setupForGenerator(){
+	nodes.splice(nodes.length -1, 1);
+	edges.splice(edges.length - 1, 1);
+
+	for (var i = 0; i < edges.length; i++)
+		edges[i].setWeight(1);
+
+	getSeedData();
+
+	idx = nodes.length - 1;
+	creating_seed = false;
+	creating_generator = true;
+}
+
+function showPotentialNode(){
+	if (withinBounds(mouseX, mouseY, screen_bounds))
+		nodes[nodes.length - 1].setPosition(closestGridPoint(mouseX, mouseY, sandbox.coords));
+
+	if (edges.length > 0)
+		edges[edges.length - 1].setEnd(nodes[nodes.length - 1].pos.x, nodes[nodes.length - 1].pos.y);
+}
+
+function showSeed(){
+	if (withinBounds(mouseX, mouseY, screen_bounds)){
+		for (var i = 0; i < edges.length; i++)
+			edges[i].show();
+
+		for (var i = 0; i < nodes.length; i++)
+			nodes[i].show();
+	}
+	else{
+		for (var i = 0; i < edges.length - 1; i++)
+			edges[i].show();
+
+		for (var i = 0; i < nodes.length - 1; i++)
+			nodes[i].show();
+	}
+}
+
+function refreshEdgeType(){
+	if (aboveLine(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
+		// text("above", 50, 50);
+		if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
+			// text("to the left", 50, 70);
+			edges[idx - 1].type = 1;
+		}
+		else 
+			edges[idx - 1].type = 0;
+	}
+	else{
+		if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
+			// text("to the left", 50, 70);
+			edges[idx - 1].type = 3;
+		}
+		else 
+			edges[idx - 1].type = 2;
+	}
+}
+
+function showSelection(){
+	var result = subdivide(idx);
+	temp_nodes = result[0];
+	temp_edges = result[1];
+
+	for (var i = 0; i < idx - 1; i++)
+		edges[i].show();
+
+	for (var i = 0; i < temp_edges.length; i++)
+		temp_edges[i].show();
+
+	for (var i = idx; i < edges.length; i++)
+		edges[i].show();
+
+	for (var i = 0; i < nodes.length; i++)
+		nodes[i].show();
+}
+
+function advance(){
+	speed = min(100, max(1, floor(edges.length / 100)));
+	for (var i = 0; i < speed; i++){
+		update(current_edge--);
+		if (current_edge == 0){
+			fractalize = false;
+			break;
+		}
+	}
+
+	scaleColours();
+	for (var i =  edges.length - 1; i >= 0; i--)
+		edges[i].show();
+
+	edges_drawn = false;
+
+	load_bar.setPercentage(edges.length / edges_to_replace);
+	load_bar.show();
+}
+
+function refresh(){
+	background(51);
+	if (show_gridlines)
+		sandbox.show();
+
+	for (var i =  edges.length - 1; i >= 0; i--)	
+		edges[i].show();
+	edges_drawn = true;
 }
 
 function update(e){
@@ -225,11 +282,6 @@ function closestGridPoint(x, y, coords){
 	return closest_pos;
 }
 
-// Determines if the point (x, y) is within the bounds of the grid
-function withinGridBounds(x, y){
-	return (abs(x - sandbox.pos.x) <= sandbox.w / 2 && abs(y - sandbox.pos.y) <= sandbox.w / 2); 
-}
-
 function getSeedData(){
 	var base = createVector(nodes[nodes.length -1].pos.x - nodes[0].pos.x, nodes[nodes.length -1].pos.y - nodes[0].pos.y);
 	var sub = createVector(0, 0);
@@ -242,7 +294,7 @@ function getSeedData(){
 		sub.y = nodes[i+1].pos.y - nodes[0].pos.y;
 		seed_data[i] = [];
 		seed_data[i][0] = sub.mag() * 1.0 / base.mag();
-		seed_data[i][1] = angleBetween(base, sub);
+		seed_data[i][1] = angleBetween(sub, base);
 		seed_data[i][2] = 0;
 
 		// SEED DATA - REVERSE DIRECTION
@@ -306,7 +358,7 @@ function subdivide(idx){
 }
 
 function angleBetween(v1, v2){
-	if ((v1.x > 0 && v2.y < v1.y) || (v1.x < 0 && v2.y > v1.y))
+	if (v2.y >= v1.y)
 		return Math.acos(dot(v1, v2)/(v1.mag()*v2.mag()));
 	else
 		return -Math.acos(dot(v1, v2)/(v1.mag()*v2.mag()));
@@ -378,11 +430,11 @@ function toTheLeft(x, y, x1, y1, x2, y2){
 		return aboveLine(x, y, end[0], end[1], mid[0], mid[1]);
 }
 
-
 function scaleColours(){
 	var l = edges.length;
 	var r, g, b;
 	for (var i = 0; i < l; i++){
+		// Map position in edges array to value between 0 and 1
 		x = map(i, 0, l-1, 0, 1);
 
 		r = 0.79788*Math.exp(-pow(1*(x - 1.0), 2)/0.5);
@@ -396,4 +448,8 @@ function scaleColours(){
 
 		edges[i].setStroke([r, g, b]);
 	}
+}
+
+function withinBounds(x, y, bounds){
+	return (x >= bounds[0] && x < bounds[1] && y >= bounds[2] && y < bounds[3]);
 }
