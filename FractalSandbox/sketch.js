@@ -17,11 +17,11 @@ var screen_bounds = [0, 720, 3, 455];
 var load_bar;
 var edges_to_replace;
 var prev_click;
+var canvas_dims = [720, 520];
 
 function setup() {
-	createCanvas(720, 520);
+	createCanvas(canvas_dims[0], canvas_dims[1]);
 	angleMode(RADIANS);
-
 	show_gridlines = true;
 
 	creating_seed = true;
@@ -67,8 +67,13 @@ function draw() {
 		edges_drawn = false;
 	}
 
-	else if (fractalize)
+	else if (fractalize){
 		advance();
+		if (edges_to_replace > 100){
+			load_bar.setPercentage(edges.length / edges_to_replace);
+			load_bar.show();
+		}
+	}
 
 	else if (!edges_drawn)
 		refresh();
@@ -110,23 +115,6 @@ function mousePressed(){
 	}
 }
 
-function translateShape(){
-	deltaX = mouseX - prev_click[0];
-	deltaY = mouseY - prev_click[1];
-
-	prev_click = [mouseX, mouseY];
-
-	for (var i = 0; i < nodes.length; i++){
-		nodes[i].setPosition([nodes[i].pos.x + deltaX, nodes[i].pos.y + deltaY]);
-		if (i > 0){
-			edges[i-1].setStart(edges[i-1].start.x + deltaX, edges[i-1].start.y + deltaY);
-			edges[i-1].setEnd(edges[i-1].end.x + deltaX, edges[i-1].end.y + deltaY);
-		}
-	}
-
-	edges_drawn = false;
-}
-
 function keyPressed(){
 	if (key == 'R')
 		setup();
@@ -147,6 +135,58 @@ function keyPressed(){
 		show_gridlines ? show_gridlines = false : show_gridlines = true;
 		edges_drawn = false;
 	}
+}
+
+function mouseWheel(event){
+	if (!mouseIsPressed && !creating_seed && !creating_generator && !fractalize)
+		zoom(map(constrain(event.delta, -200, 200), -200, 200, 1.3, 0.7), [mouseX, mouseY]);
+	return false;
+}
+
+function translateShape(){
+	deltaX = mouseX - prev_click[0];
+	deltaY = mouseY - prev_click[1];
+
+	prev_click = [mouseX, mouseY];
+
+	for (var i = 0; i < nodes.length; i++){
+		nodes[i].setPosition([nodes[i].pos.x + deltaX, nodes[i].pos.y + deltaY]);
+		if (i > 0){
+			edges[i-1].setStart(edges[i-1].start.x + deltaX, edges[i-1].start.y + deltaY);
+			edges[i-1].setEnd(edges[i-1].end.x + deltaX, edges[i-1].end.y + deltaY);
+		}
+	}
+
+	edges_drawn = false;
+}
+
+function zoom(delta, center){
+	for (var i = 0; i < nodes.length; i++){
+		new_pos = scalePoint(nodes[i].pos.x, nodes[i].pos.y, delta, center);
+		nodes[i].setPosition([new_pos[0], new_pos[1]]);
+		if (i > 0){
+			new_start = scalePoint(edges[i-1].start.x, edges[i-1].start.y, delta, center);
+			edges[i-1].setStart(new_start[0], new_start[1]);
+
+			new_end = scalePoint(edges[i-1].end.x, edges[i-1].end.y, delta, center);
+			edges[i-1].setEnd(new_end[0], new_end[1]);
+		}
+	}
+
+	edges_drawn = false;
+}
+
+function scalePoint(x, y, delta, center){
+	x = x - center[0];
+	y = y - center[1];
+
+	var r = pow(pow(x, 2) +  pow(y, 2), 0.5);
+	var theta = polarAngle(x, y);
+
+	var new_x = delta * r * cos(theta) + center[0];
+	var new_y = delta * r * sin(theta) + center[1];
+
+	return [new_x, new_y];
 }
 
 function setupForGenerator(){
@@ -241,9 +281,6 @@ function advance(){
 		edges[i].show();
 
 	edges_drawn = false;
-
-	load_bar.setPercentage(edges.length / edges_to_replace);
-	load_bar.show();
 }
 
 function refresh(){
@@ -452,4 +489,15 @@ function scaleColours(){
 
 function withinBounds(x, y, bounds){
 	return (x >= bounds[0] && x < bounds[1] && y >= bounds[2] && y < bounds[3]);
+}
+
+function polarAngle(x, y){
+	if (x > 0 && y > 0)
+		return Math.atan(abs(y) / abs(x));
+	else if (x < 0 && y > 0)
+		return Math.PI - Math.atan(abs(y) / abs(x));
+	else if (x > 0 && y < 0)
+		return 2*Math.PI - Math.atan(abs(y) / abs(x));
+	else
+		return Math.PI + Math.atan(abs(y) / abs(x));
 }
