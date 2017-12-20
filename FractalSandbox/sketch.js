@@ -82,7 +82,7 @@ function setup() {
 }
 
 function draw() {
-	if (creating_seed || creating_generator || fractalize || loading_seed){
+	if (creating_seed || creating_generator || fractalize){
 		background(51);
 	}
 
