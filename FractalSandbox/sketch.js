@@ -22,9 +22,13 @@ var prev_click;
 var canvas_dims = [720, 520];
 var upload_button;
 var loading_seed;
-var load_data;
 var ready_to_load;
 var show_upload_button;
+var saving_seed;
+var save_file_name;
+var text_input;
+var show_text_input;
+var show_save_button;
 
 function setup() {
 	createCanvas(canvas_dims[0], canvas_dims[1]);
@@ -63,6 +67,18 @@ function setup() {
 
 	loading_seed = false;
 	ready_to_load = false;
+
+	saving_seed = false;
+
+	text_input = createInput('enter filename');
+	text_input.position(sandbox.pos.x - 90, sandbox.pos.y + 5);
+	text_input.input(updateSaveFileName);
+	show_text_input = false;
+
+	save_button = createButton('save');
+	save_button.position(sandbox.pos.x + 50, sandbox.pos.y + 5);
+	save_button.mousePressed(saveSeed);
+	show_save_button = false;
 }
 
 function draw() {
@@ -70,13 +86,7 @@ function draw() {
 		background(51);
 	}
 
-	if (loading_seed){
-		if (show_gridlines)
-			sandbox.show();
-		showLoadBox();
-	}
-
-	else if (creating_seed){
+	if (creating_seed){
 		if (show_gridlines)
 			sandbox.show();
 		showPotentialNode();
@@ -100,22 +110,25 @@ function draw() {
 	else if (!edges_drawn)
 		refresh();
 
-	if (mouseIsPressed && !creating_seed && !creating_generator && !fractalize){
+	if (mouseIsPressed && !creating_seed && !creating_generator && !fractalize && !loading_seed && !saving_seed){
 		translateShape();
 	}
 
 	control_box.show();
 
-	if (loading_seed && load_data.length > 0){
-		console.log(load_data);
-		loadSeed();
-	}
+	if (saving_seed)
+		showSaveBox();
+
+	if (loading_seed)
+		showLoadBox();
 
 	show_upload_button ? upload_button.show() : upload_button.hide();
+	show_text_input ? text_input.show() : text_input.hide();
+	show_save_button ? save_button.show() : save_button.hide();
 }
 
 function mousePressed(){
-	if (!loading_seed){
+	if (!loading_seed && !saving_seed){
 		prev_click = [mouseX, mouseY];
 		if (creating_seed && withinBounds(mouseX, mouseY, screen_bounds)){
 			nodes = append(nodes, new FractalNode(0, 0));
@@ -138,54 +151,55 @@ function mousePressed(){
 	}
 
 	if (withinBounds(mouseX, mouseY, control_box.bounds)){
-		if (withinBounds(mouseX, mouseY, control_box.buttons[0].bounds) && !loading_seed)
-			saveSeed();
+		// Save Button
+		if (withinBounds(mouseX, mouseY, control_box.buttons[0].bounds) && !loading_seed && !creating_seed && !creating_generator){
+			show_text_input ? show_text_input = false : show_text_input = true;
+			show_save_button ? show_save_button = false : show_save_button = true;
+			saving_seed ? saving_seed = false : saving_seed = true;	
+		}
 
-		if (withinBounds(mouseX, mouseY, control_box.buttons[1].bounds)){
-			load_data = [];
+		// Load Button
+		if (withinBounds(mouseX, mouseY, control_box.buttons[1].bounds) && !saving_seed){
 			show_upload_button ? show_upload_button = false : show_upload_button = true;
 			loading_seed ? loading_seed = false : loading_seed = true;
 		}
 
-		if (withinBounds(mouseX, mouseY, control_box.buttons[2].bounds) && !loading_seed){
-			show_gridlines ? show_gridlines = false : show_gridlines = true;
+		// Gridlines Button
+		if (withinBounds(mouseX, mouseY, control_box.buttons[3].bounds) && !loading_seed && !saving_seed){
+			sandbox.setType((sandbox.type + 1) % 3);
+			sandbox.type == 2 ? show_gridlines = false : show_gridlines = true;
 			edges_drawn = false;
 		}
 
-		if (withinBounds(mouseX, mouseY, control_box.buttons[4].bounds) && !loading_seed)
+		if (withinBounds(mouseX, mouseY, control_box.buttons[5].bounds) && !loading_seed && !saving_seed)
 			setup();
 	}
 }
 
 function keyPressed(){
-	if (key == 'R')
-		setup();
+	if (!loading_seed && !saving_seed){
+		if (key == 'R')
+			setup();
 
-	if (keyCode == ENTER){
-		if (creating_seed)
-			setupForGenerator();
+		if (keyCode == ENTER){
+			if (creating_seed)
+				setupForGenerator();
 
-		if (!creating_seed && !creating_generator && !fractalize && edges.length <= 10000){
-			fractalize = true;
-			current_edge = edges.length;
-			var level = floor(Math.log(edges.length) / Math.log(seed_data.length)) + 1;
-			edges_to_replace = pow(seed_data.length, level);
+			if (!creating_seed && !creating_generator && !fractalize && edges.length <= 10000){
+				fractalize = true;
+				current_edge = edges.length;
+				var level = floor(Math.log(edges.length) / Math.log(seed_data.length)) + 1;
+				edges_to_replace = pow(seed_data.length, level);
+			}
 		}
-	}
 
-	if (key == 'G'){
-		show_gridlines ? show_gridlines = false : show_gridlines = true;
-		edges_drawn = false;
-	}
+		if (key == 'G'){
+			show_gridlines ? show_gridlines = false : show_gridlines = true;
+			edges_drawn = false;
+		}
 
-	if (key == 'S'){
-		saveSeed();
-	}
-
-	if (key == 'L'){
-		load_data = [];
-		show_upload_button ? show_upload_button = false : show_upload_button = true;
-		loading_seed ? loading_seed = false : loading_seed = true;
+		if (key == 'Z' && creating_seed)
+			undo();
 	}
 }
 
@@ -259,15 +273,19 @@ function setupForGenerator(){
 }
 
 function showPotentialNode(){
-	if (withinBounds(mouseX, mouseY, screen_bounds))
-		nodes[nodes.length - 1].setPosition(closestGridPoint(mouseX, mouseY, sandbox.coords));
+	if (withinBounds(mouseX, mouseY, screen_bounds)){
+		if (sandbox.type == 0 || sandbox.type == 1)
+			nodes[nodes.length - 1].setPosition(closestGridPoint(mouseX, mouseY, sandbox.coords));
+		else
+			nodes[nodes.length - 1].setPosition([mouseX, mouseY]);
+	}
 
 	if (edges.length > 0)
 		edges[edges.length - 1].setEnd(nodes[nodes.length - 1].pos.x, nodes[nodes.length - 1].pos.y);
 }
 
 function showSeed(){
-	if (withinBounds(mouseX, mouseY, screen_bounds)){
+	if (withinBounds(mouseX, mouseY, screen_bounds) && !loading_seed){
 		for (var i = 0; i < edges.length; i++)
 			edges[i].show();
 
@@ -283,30 +301,38 @@ function showSeed(){
 	}
 }
 
+function undo(){
+	if (nodes.length > 1){
+		nodes.splice(nodes.length-1, 1);
+		edges.splice(nodes.length-1, 1);
+	}
+}
+
 function refreshEdgeType(){
-	if (aboveLine(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-		text("above", 50, 50);
-		if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-			text("to the left", 50, 70);
-			edges[idx - 1].setType(1);
-			edges_copy[idx - 1].setType(1);
-		}
-		else{
-			edges[idx - 1].setType(0);
-			edges_copy[idx - 1].setType(0);
-		}
-	}
-	else{
-		if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-			text("to the left", 50, 70);
-			edges[idx - 1].setType(3);
-			edges_copy[idx - 1].setType(3);
-		}
-		else {
-			edges[idx - 1].setType(2);
-			edges_copy[idx - 1].setType(2);
-		}
-	}
+	// if (aboveLine(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
+	// 	// text("above", 50, 50);
+	// 	if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
+	// 		// text("to the left", 50, 70);
+	// 		edges[idx - 1].setType(1);
+	// 		edges_copy[idx - 1].setType(1);
+	// 	}
+	// 	else{
+	// 		edges[idx - 1].setType(0);
+	// 		edges_copy[idx - 1].setType(0);
+	// 	}
+	// }
+	// else{
+	// 	if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
+	// 		// text("to the left", 50, 70);
+	// 		edges[idx - 1].setType(3);
+	// 		edges_copy[idx - 1].setType(3);
+	// 	}
+	// 	else {
+	// 		edges[idx - 1].setType(2);
+	// 		edges_copy[idx - 1].setType(2);
+	// 	}
+	// }
+	edges[idx - 1].setType(0);
 }
 
 function showSelection(){
@@ -555,6 +581,7 @@ function scaleColours(){
 		// Map position in edges array to value between 0 and 1
 		x = map(i, 0, l-1, 0, 1);
 
+		// Shifted gaussians map pixel channels
 		r = 0.79788*Math.exp(-pow(1*(x - 1.0), 2)/0.5);
 		r = map(r, 0, 1, 20, 255);
 
@@ -570,6 +597,7 @@ function scaleColours(){
 
 function withinBounds(x, y, bounds){
 	return (x >= bounds[0] && x < bounds[1] && y >= bounds[2] && y < bounds[3]);
+	// 			left             right           bottom             top
 }
 
 function polarAngle(x, y){
@@ -605,6 +633,10 @@ function edgeCopy(e){
 	return result;
 }
 
+function updateSaveFileName(){
+	save_file_name = this.value();
+}
+
 function saveSeed(){
 	var save_data = [];
 	for (var i = 0; i < nodes_copy.length; i++)
@@ -612,18 +644,17 @@ function saveSeed(){
 			save_data = append(save_data, str(nodes_copy[i].pos.x) + "%" + str(nodes_copy[i].pos.y));
 		else
 			save_data = append(save_data, str(nodes_copy[i].pos.x) + "%" + str(nodes_copy[i].pos.y) + "%" + str(edges_copy[i-1].type));
-	saveStrings(save_data, "test.txt");
+	saveStrings(save_data, save_file_name);
+	saving_seed = false;
+	show_save_button = false;
+	show_text_input = false;
 }
 
 function handleFile(file){
-	loadStrings(file.name, alertWhenReady);
+	loadSeed(split(file.data, '\n'));
 }
 
-function alertWhenReady(file_data){
-	load_data = file_data;
-}
-
-function loadSeed(){
+function loadSeed(loaded_data){
 	upload_button.remove();
 	setup();
 	creating_seed = false;
@@ -632,8 +663,8 @@ function loadSeed(){
 	ready_to_load = false;
 	nodes = [];
 	var specs;
-	for (var i = 0; i < load_data.length; i++){
-		specs = split(load_data[i], '%');
+	for (var i = 0; i < loaded_data.length - 1; i++){
+		specs = split(loaded_data[i], '%');
 		nodes[i] = new FractalNode(parseFloat(specs[0]), parseFloat(specs[1]));
 		if (i > 0)
 			edges[i-1] = new FractalEdge(nodes[i-1], nodes[i], 1, parseFloat(specs[2]), [200, 200, 200]);
@@ -646,8 +677,6 @@ function loadSeed(){
  	}
 	nodes_copy = nodeCopy(nodes);
 	edges_copy = edgeCopy(edges);
-
-	
 }
 
 function showLoadBox(){
@@ -662,5 +691,20 @@ function showLoadBox(){
 		textAlign(CENTER, CENTER);
 		textSize(18);
 		text("Upload your seed:", sandbox.pos.x, sandbox.pos.y - 15);
+	pop();
+}
+
+function showSaveBox(){
+	push();
+		fill(200);
+		stroke(0);
+		strokeWeight(7);
+		rectMode(CENTER);
+		rect(sandbox.pos.x, sandbox.pos.y, 280, 80, 10);
+		fill(0);
+		noStroke();
+		textAlign(CENTER, CENTER);
+		textSize(14);
+		text("What would you like to call your file?", sandbox.pos.x, sandbox.pos.y - 15);
 	pop();
 }
