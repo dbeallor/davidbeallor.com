@@ -18,24 +18,39 @@ function Sandbox(x, y, dims){
 		// Gridlines
 		push();
 			translate(this.pos.x, this.pos.y);
+			// Draw finest mesh
 			for (var i = -this.offset * this.gap; i <= this.offset * this.gap; i += this.gap){
-				if (round(i) == 0) 
-					stroke(150);
-				else if (round(i / this.gap) % 4 == 0){
-					if (round(i / this.gap) % 8 == 0) 
-						stroke(110);
-					else
-						stroke(90);
-				}
-				else 
+				if (round(i / this.gap) % 4 != 0){
 					stroke(70);
-				line(i, -this.w / 2, i, this.w / 2);
-				line(-this.w / 2, i, this.w / 2, i);
+					line(i, -this.w / 2, i, this.w / 2);
+					line(-this.w / 2, i, this.w / 2, i);
+				}
 			}
-			// Redraw center lines
-			stroke(150);
+
+			// Draw medium grid lines
+			for (var i = -this.offset * this.gap; i <= this.offset * this.gap; i += this.gap){
+				if (round(i / this.gap) % 4 == 0){
+					stroke(90);
+					line(i, -this.w / 2, i, this.w / 2);
+					line(-this.w / 2, i, this.w / 2, i);
+				}
+			}
+
+			// Draw strong grid lines
+			for (var i = -this.offset * this.gap; i <= this.offset * this.gap; i += this.gap){
+				if (round(i / this.gap) % 8 == 0){
+					stroke(130);
+					line(i, -this.w / 2, i, this.w / 2);
+					line(-this.w / 2, i, this.w / 2, i);
+				}
+			}
+
+			// Draw center lines
+			stroke(180);
 			line(0, -this.w / 2, 0, this.w / 2);
 			line(-this.w / 2, 0, this.w / 2, 0);
+
+			
 		pop();
 	}
 }

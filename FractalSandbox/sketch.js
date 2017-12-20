@@ -2,6 +2,8 @@ var sandbox;
 var show_gridlines;
 var nodes;
 var edges;
+var nodes_copy;
+var edges_copy;
 var temp_nodes;
 var temp_edges;
 var creating_seed;
@@ -18,6 +20,11 @@ var load_bar;
 var edges_to_replace;
 var prev_click;
 var canvas_dims = [720, 520];
+var upload_button;
+var loading_seed;
+var load_data;
+var ready_to_load;
+var show_upload_button;
 
 function setup() {
 	createCanvas(canvas_dims[0], canvas_dims[1]);
@@ -34,6 +41,8 @@ function setup() {
 
 	nodes = [];
 	edges = [];
+	nodes_copy = [];
+	edges_copy = [];
 
 	seed_data = [];
 	r_seed_data = [];
@@ -43,20 +52,33 @@ function setup() {
 
 	nodes[0] = new FractalNode(0, 0);
 
-	var labels = ["LOAD", "COLOR\nSCHEME", "GRID\nLINES", "HELP", "RESTART"];
+	var labels = ["SAVE", "LOAD", "COLOR\nSCHEME", "GRID\nLINES", "HELP", "RESTART"];
 	control_box = new ControlBox(width / 2 - 2, height - 32, width-3, 60, labels.length, labels);
 
-	load_bar = new LoadBar(20, 20, 80, 10);
+	load_bar = new LoadBar(screen_bounds[1] - 100, screen_bounds[3] - 15, 80, 10);
+
+	upload_button = createFileInput(handleFile);
+	upload_button.position(sandbox.pos.x - 80, sandbox.pos.y + 5);
+	show_upload_button = false;
+
+	loading_seed = false;
+	ready_to_load = false;
 }
 
 function draw() {
-	if (creating_seed || creating_generator || fractalize){
+	if (creating_seed || creating_generator || fractalize || loading_seed){
 		background(51);
-		if (show_gridlines)
-			sandbox.show();
 	}
 
-	if (creating_seed){
+	if (loading_seed){
+		if (show_gridlines)
+			sandbox.show();
+		showLoadBox();
+	}
+
+	else if (creating_seed){
+		if (show_gridlines)
+			sandbox.show();
 		showPotentialNode();
 		showSeed();
 	} 
@@ -82,35 +104,55 @@ function draw() {
 		translateShape();
 	}
 
-	control_box.show();	
+	control_box.show();
+
+	if (loading_seed && load_data.length > 0){
+		console.log(load_data);
+		loadSeed();
+	}
+
+	show_upload_button ? upload_button.show() : upload_button.hide();
 }
 
 function mousePressed(){
-	prev_click = [mouseX, mouseY];
-	if (creating_seed && withinBounds(mouseX, mouseY, screen_bounds)){
-		nodes = append(nodes, new FractalNode(0, 0));
-		edges = append(edges, new FractalEdge(nodes[nodes.length - 2], nodes[nodes.length - 1], 2, 0, [200, 200, 200]));
-	}
+	if (!loading_seed){
+		prev_click = [mouseX, mouseY];
+		if (creating_seed && withinBounds(mouseX, mouseY, screen_bounds)){
+			nodes = append(nodes, new FractalNode(0, 0));
+			edges = append(edges, new FractalEdge(nodes[nodes.length - 2], nodes[nodes.length - 1], 2, 0, [200, 200, 200]));
+		}
 
-	if (creating_generator && withinBounds(mouseX, mouseY, screen_bounds)){
-		seed_data[idx-1][2] = edges[idx-1].type;
-		r_seed_data[r_seed_data.length - idx][2] = edges[idx-1].type;
-		edges.splice(idx - 1, 1);
-		edges = splice(edges, temp_edges, idx - 1);
-		nodes = splice(nodes, temp_nodes, idx);
-		idx--;
-		if (idx == 0){
-			creating_generator = false;
+		if (creating_generator && withinBounds(mouseX, mouseY, screen_bounds)){
+			seed_data[idx-1][2] = edges[idx-1].type;
+			r_seed_data[r_seed_data.length - idx][2] = edges[idx-1].type;
+			edges.splice(idx - 1, 1);
+			edges = splice(edges, temp_edges, idx - 1);
+			nodes = splice(nodes, temp_nodes, idx);
+			idx--;
+			if (idx == 0){
+				nodes = nodeCopy(nodes_copy);
+				edges = edgeCopy(edges_copy);
+				creating_generator = false;
+			}
 		}
 	}
 
 	if (withinBounds(mouseX, mouseY, control_box.bounds)){
-		if (withinBounds(mouseX, mouseY, control_box.buttons[2].bounds)){
+		if (withinBounds(mouseX, mouseY, control_box.buttons[0].bounds) && !loading_seed)
+			saveSeed();
+
+		if (withinBounds(mouseX, mouseY, control_box.buttons[1].bounds)){
+			load_data = [];
+			show_upload_button ? show_upload_button = false : show_upload_button = true;
+			loading_seed ? loading_seed = false : loading_seed = true;
+		}
+
+		if (withinBounds(mouseX, mouseY, control_box.buttons[2].bounds) && !loading_seed){
 			show_gridlines ? show_gridlines = false : show_gridlines = true;
 			edges_drawn = false;
 		}
 
-		if (withinBounds(mouseX, mouseY, control_box.buttons[4].bounds))
+		if (withinBounds(mouseX, mouseY, control_box.buttons[4].bounds) && !loading_seed)
 			setup();
 	}
 }
@@ -134,6 +176,16 @@ function keyPressed(){
 	if (key == 'G'){
 		show_gridlines ? show_gridlines = false : show_gridlines = true;
 		edges_drawn = false;
+	}
+
+	if (key == 'S'){
+		saveSeed();
+	}
+
+	if (key == 'L'){
+		load_data = [];
+		show_upload_button ? show_upload_button = false : show_upload_button = true;
+		loading_seed ? loading_seed = false : loading_seed = true;
 	}
 }
 
@@ -198,6 +250,9 @@ function setupForGenerator(){
 
 	getSeedData();
 
+	nodes_copy = nodeCopy(nodes);
+	edges_copy = edgeCopy(edges);
+
 	idx = nodes.length - 1;
 	creating_seed = false;
 	creating_generator = true;
@@ -230,21 +285,27 @@ function showSeed(){
 
 function refreshEdgeType(){
 	if (aboveLine(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-		// text("above", 50, 50);
+		text("above", 50, 50);
 		if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-			// text("to the left", 50, 70);
-			edges[idx - 1].type = 1;
+			text("to the left", 50, 70);
+			edges[idx - 1].setType(1);
+			edges_copy[idx - 1].setType(1);
 		}
-		else 
-			edges[idx - 1].type = 0;
+		else{
+			edges[idx - 1].setType(0);
+			edges_copy[idx - 1].setType(0);
+		}
 	}
 	else{
 		if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-			// text("to the left", 50, 70);
-			edges[idx - 1].type = 3;
+			text("to the left", 50, 70);
+			edges[idx - 1].setType(3);
+			edges_copy[idx - 1].setType(3);
 		}
-		else 
-			edges[idx - 1].type = 2;
+		else {
+			edges[idx - 1].setType(2);
+			edges_copy[idx - 1].setType(2);
+		}
 	}
 }
 
@@ -285,9 +346,6 @@ function advance(){
 
 function refresh(){
 	background(51);
-	if (show_gridlines)
-		sandbox.show();
-
 	for (var i =  edges.length - 1; i >= 0; i--)	
 		edges[i].show();
 	edges_drawn = true;
@@ -319,10 +377,16 @@ function closestGridPoint(x, y, coords){
 	return closest_pos;
 }
 
+function setEdgeTypes(){
+	for (var i = 0; i < edges.length; i++){
+		edges[i].setType(seed_data[i % seed_data.length][2]);
+	}
+}
+
 function getSeedData(){
-	var base = createVector(nodes[nodes.length -1].pos.x - nodes[0].pos.x, nodes[nodes.length -1].pos.y - nodes[0].pos.y);
+	var base = createVector(nodes[nodes.length-1].pos.x - nodes[0].pos.x, nodes[nodes.length-1].pos.y - nodes[0].pos.y);
 	var sub = createVector(0, 0);
-	var r_base = createVector(nodes[0].pos.x - nodes[nodes.length -1].pos.x, nodes[0].pos.y - nodes[nodes.length -1].pos.y);
+	var r_base = createVector(nodes[0].pos.x - nodes[nodes.length-1].pos.x, nodes[0].pos.y - nodes[nodes.length-1].pos.y);
 	var r_sub = createVector(0, 0);
 	for (var i = 0; i < nodes.length - 2; i++){
 		// SEED DATA - FORWARD DIRECTION
@@ -340,7 +404,7 @@ function getSeedData(){
 		r_sub.y = nodes[nodes.length - 2 - i].pos.y - nodes[nodes.length - 1].pos.y;
 		r_seed_data[i] = [];
 		r_seed_data[i][0] = r_sub.mag() * 1.0 / r_base.mag();
-		r_seed_data[i][1] = angleBetween(r_base, r_sub);
+		r_seed_data[i][1] = angleBetween(r_sub, r_base);
 		r_seed_data[i][2] = 0;
 	}
 
@@ -351,7 +415,7 @@ function getSeedData(){
 
 function subdivide(idx){
 	var new_base = createVector(nodes[idx].pos.x - nodes[idx-1].pos.x, nodes[idx].pos.y - nodes[idx-1].pos.y);
-	var angle_offset = new_base.heading();
+	var angle_offset = polarAngle(new_base.x, new_base.y);
 	var mag_scaler = new_base.mag();
 	var new_nodes = [];
 	var new_edges = [];
@@ -380,25 +444,42 @@ function subdivide(idx){
 		// Add a node with these coordinates to the nodes array
 		new_nodes = append(new_nodes, new FractalNode(x, y));
 
+		var new_type = edges[idx - 1].type;
+		if (data[j][2] == 2 || data[j][2] == 3)
+		 	new_type = (new_type + 2) % 4;
+		else if (data[j][2] == 1 || data[j][2] == 3)
+			new_type = (new_type + 3) % 4;
 		// Add an edge between this node and the previous one
 		if (j-1 >= 0)
-			new_edges = append(new_edges, new FractalEdge(new_nodes[j-1], new_nodes[j], 1, data[j][2], [200, 200, 200]));
+			new_edges = append(new_edges, new FractalEdge(new_nodes[j-1], new_nodes[j], 1, new_type, [200, 200, 200]));
 		// 													node1             node2   weight  type         stroke
 		else
-			new_edges = append(new_edges, new FractalEdge(nodes[idx-1], new_nodes[j], 1, data[j][2], [200, 200, 200]));
+			new_edges = append(new_edges, new FractalEdge(nodes[idx-1], new_nodes[j], 1, new_type, [200, 200, 200]));
 	}
 
 	// Finally, add an edge connecting the last node in the seed to the next node in nodes
-	new_edges = append(new_edges, new FractalEdge(new_nodes[new_nodes.length - 1], nodes[idx], 1, data[data.length - 1][2], [200, 200, 200]));
+	if (data[data.length - 1][2] == 2 || data[data.length - 1][2] == 3)
+	 	new_type = (new_type + 2) % 4;
+	else if (data[data.length - 1][2] == 1 || data[data.length - 1][2] == 3)
+		new_type = (new_type + 1) % 4;
+	new_edges = append(new_edges, new FractalEdge(new_nodes[new_nodes.length - 1], nodes[idx], 1, new_type, [200, 200, 200]));
 
 	return [new_nodes, new_edges];
 }
 
 function angleBetween(v1, v2){
-	if (v2.y >= v1.y)
-		return Math.acos(dot(v1, v2)/(v1.mag()*v2.mag()));
+	return polarAngle(v2.x, v2.y) - polarAngle(v1.x, v1.y);
+}
+
+function quadrant(v){
+	if (v.x >= 0 && v.y >= 0)
+		return 1
+	if (v.x >= 0 && v.y < 0)
+		return 2
+	if (v.x < 0 && v.y > 0)
+		return 3
 	else
-		return -Math.acos(dot(v1, v2)/(v1.mag()*v2.mag()));
+		return 4
 }
 
 function dot(v1, v2){
@@ -498,6 +579,88 @@ function polarAngle(x, y){
 		return Math.PI - Math.atan(abs(y) / abs(x));
 	else if (x > 0 && y < 0)
 		return 2*Math.PI - Math.atan(abs(y) / abs(x));
-	else
+	else if (x < 0 && y < 0)
 		return Math.PI + Math.atan(abs(y) / abs(x));
+	else if (x == 0 && y > 0)
+		return Math.PI / 2;
+	else if (x == 0 && y < 0)
+		return 3*Math.PI / 2;
+	else if (x < 0 && y == 0)
+		return Math.PI;
+	else
+		return 0;
+}
+
+function nodeCopy(n){
+	result = [];
+	for (var i = 0; i < n.length; i++)
+		result[i] = new FractalNode(n[i].pos.x, n[i].pos.y);
+	return result;
+}
+
+function edgeCopy(e){
+	result = [];
+	for (var i = 0; i < e.length; i++)
+		result[i] = new FractalEdge(e[i].node1, e[i].node2, e[i].weight, e[i].type, e[i].stroke);
+	return result;
+}
+
+function saveSeed(){
+	var save_data = [];
+	for (var i = 0; i < nodes_copy.length; i++)
+		if (i == 0)
+			save_data = append(save_data, str(nodes_copy[i].pos.x) + "%" + str(nodes_copy[i].pos.y));
+		else
+			save_data = append(save_data, str(nodes_copy[i].pos.x) + "%" + str(nodes_copy[i].pos.y) + "%" + str(edges_copy[i-1].type));
+	saveStrings(save_data, "test.txt");
+}
+
+function handleFile(file){
+	loadStrings(file.name, alertWhenReady);
+}
+
+function alertWhenReady(file_data){
+	load_data = file_data;
+}
+
+function loadSeed(){
+	upload_button.remove();
+	setup();
+	creating_seed = false;
+	edges_drawn = false;
+	loading_seed = false;
+	ready_to_load = false;
+	nodes = [];
+	var specs;
+	for (var i = 0; i < load_data.length; i++){
+		specs = split(load_data[i], '%');
+		nodes[i] = new FractalNode(parseFloat(specs[0]), parseFloat(specs[1]));
+		if (i > 0)
+			edges[i-1] = new FractalEdge(nodes[i-1], nodes[i], 1, parseFloat(specs[2]), [200, 200, 200]);
+	}
+	console.log(nodes);
+	getSeedData();
+	for (var i = 0; i < edges.length; i++){
+		seed_data[i][2] = edges[i].type;
+		r_seed_data[r_seed_data.length - 1 - i][2] = edges[i].type;
+ 	}
+	nodes_copy = nodeCopy(nodes);
+	edges_copy = edgeCopy(edges);
+
+	
+}
+
+function showLoadBox(){
+	push();
+		fill(200);
+		stroke(0);
+		strokeWeight(7);
+		rectMode(CENTER);
+		rect(sandbox.pos.x, sandbox.pos.y, 250, 80, 10);
+		fill(0);
+		noStroke();
+		textAlign(CENTER, CENTER);
+		textSize(18);
+		text("Upload your seed:", sandbox.pos.x, sandbox.pos.y - 15);
+	pop();
 }
