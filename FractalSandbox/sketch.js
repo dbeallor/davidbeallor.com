@@ -309,30 +309,30 @@ function undo(){
 }
 
 function refreshEdgeType(){
-	// if (aboveLine(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-	// 	// text("above", 50, 50);
-	// 	if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-	// 		// text("to the left", 50, 70);
-	// 		edges[idx - 1].setType(1);
-	// 		edges_copy[idx - 1].setType(1);
-	// 	}
-	// 	else{
-	// 		edges[idx - 1].setType(0);
-	// 		edges_copy[idx - 1].setType(0);
-	// 	}
-	// }
-	// else{
-	// 	if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
-	// 		// text("to the left", 50, 70);
-	// 		edges[idx - 1].setType(3);
-	// 		edges_copy[idx - 1].setType(3);
-	// 	}
-	// 	else {
-	// 		edges[idx - 1].setType(2);
-	// 		edges_copy[idx - 1].setType(2);
-	// 	}
-	// }
-	edges[idx - 1].setType(0);
+	if (aboveLine(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
+		// text("above", 50, 50);
+		if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
+			// text("to the left", 50, 70);
+			edges[idx - 1].setType(1);
+			edges_copy[idx - 1].setType(1);
+		}
+		else{
+			edges[idx - 1].setType(0);
+			edges_copy[idx - 1].setType(0);
+		}
+	}
+	else{
+		if (toTheLeft(mouseX, mouseY, nodes[idx - 1].pos.x, nodes[idx - 1].pos.y, nodes[idx].pos.x, nodes[idx].pos.y)){
+			// text("to the left", 50, 70);
+			edges[idx - 1].setType(3);
+			edges_copy[idx - 1].setType(3);
+		}
+		else {
+			edges[idx - 1].setType(2);
+			edges_copy[idx - 1].setType(2);
+		}
+	}
+	// edges[idx - 1].setType(0);
 }
 
 function showSelection(){
@@ -470,11 +470,8 @@ function subdivide(idx){
 		// Add a node with these coordinates to the nodes array
 		new_nodes = append(new_nodes, new FractalNode(x, y));
 
-		var new_type = edges[idx - 1].type;
-		if (data[j][2] == 2 || data[j][2] == 3)
-		 	new_type = (new_type + 2) % 4;
-		else if (data[j][2] == 1 || data[j][2] == 3)
-			new_type = (new_type + 3) % 4;
+		var new_type = getNewType(edges[idx - 1].type, data, j);
+
 		// Add an edge between this node and the previous one
 		if (j-1 >= 0)
 			new_edges = append(new_edges, new FractalEdge(new_nodes[j-1], new_nodes[j], 1, new_type, [200, 200, 200]));
@@ -484,13 +481,42 @@ function subdivide(idx){
 	}
 
 	// Finally, add an edge connecting the last node in the seed to the next node in nodes
-	if (data[data.length - 1][2] == 2 || data[data.length - 1][2] == 3)
-	 	new_type = (new_type + 2) % 4;
-	else if (data[data.length - 1][2] == 1 || data[data.length - 1][2] == 3)
-		new_type = (new_type + 1) % 4;
+	new_type = getNewType(edges[idx - 1].type, data, data.length - 1);
 	new_edges = append(new_edges, new FractalEdge(new_nodes[new_nodes.length - 1], nodes[idx], 1, new_type, [200, 200, 200]));
 
 	return [new_nodes, new_edges];
+}
+
+function getNewType(current_type, data, j){
+	var new_type;
+	switch(data[j][2]){
+		case 0: new_type = current_type; break;
+		case 1:
+			switch(current_type){
+				case 0: new_type = 1; break;
+				case 1: new_type = 0; break;
+				case 2: new_type = 3; break;
+				case 3: new_type = 2; break;
+			}	
+			break;
+		case 2:
+			switch(current_type){
+				case 0: new_type = 2; break;
+				case 1: new_type = 3; break;
+				case 2: new_type = 0; break;
+				case 3: new_type = 1; break;
+			}	
+			break;
+		case 3: 
+			switch(current_type){
+				case 0: new_type = 3; break;
+				case 1: new_type = 2; break;
+				case 2: new_type = 1; break;
+				case 3: new_type = 0; break;
+			}		
+			break;
+	}
+	return new_type;
 }
 
 function angleBetween(v1, v2){
