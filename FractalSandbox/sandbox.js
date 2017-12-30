@@ -24,12 +24,10 @@ function Sandbox(x, y, w){
 	this.num_h_lines = 99;
 	this.v_gap = this.w / (this.num_h_lines + 1);
 	this.h_gap = 2 * this.v_gap * tan(PI / 6);
-	console.log(this.h_gap);
 	this.r = this.w / 2;
 	this.h_dist = ((this.num_h_lines + 1)*this.gap)*tan(PI / 6);
 	this.h_offset = ((this.num_h_lines + 1) / 2);
 	this.v_offset = ((this.num_h_lines + 1) / 2);
-	console.log(this.h_offset);
 	this.triangle_coords = []
 
 	// Initialize Triangle Coords

@@ -9,7 +9,7 @@ function ControlBox(x, y, w, h, num_buttons, labels){
 	this.button_highlight = [160, 180, 160];
 
 	var offset = this.width / (num_buttons + 1);
-	var gap = 0.15 * offset;
+	var gap = 0.05 * offset;
 	for (var i = 0; i < num_buttons; i++){
 		this.buttons[i] = new ControlButton(this, labels[i], offset - 2*gap, 0.7*this.height);
 		this.buttons[i].setPosition(offset * (i+1), this.height / 2);
@@ -23,7 +23,7 @@ function ControlBox(x, y, w, h, num_buttons, labels){
 			rectMode(CENTER);
 			rect(this.pos.x, this.pos.y, this.width, this.height);
 			for (var i = 0; i < this.buttons.length; i++){
-				if (withinBounds(mouseX, mouseY, this.buttons[i].bounds))
+				if (withinBounds(mouseX, mouseY, this.buttons[i].bounds) && noOpenWindows())
 					this.buttons[i].setFill(this.button_highlight);
 				else
 					this.buttons[i].setFill(this.button_fill);
