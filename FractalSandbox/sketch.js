@@ -555,8 +555,6 @@ function setupForGenerator(){
 	nodes.splice(nodes.length - 1, 1);
 	edges.splice(edges.length - 1, 1);
 
-	print(edges);
-
 	for (var i = 0; i < edges.length; i++)
 		edges[i].setWeight(1);
 
@@ -761,7 +759,6 @@ function updateGenerator(skip, hide){
 	}
 
 	edges = edgeCopy(edges_copy);
-	print(edges_copy);
 	nodes = nodeCopy(nodes_copy);
 	for (var i = edges.length - 1; i >= idx - 1; i--){
 		if (edges[i].type < 4)
@@ -776,8 +773,6 @@ function updateGenerator(skip, hide){
 		creating_generator = false;
 		showButtons(["FRACTALIZE", "SAVE", "LOAD", "COLOR\nSCHEME", "RESTART", "HELP"]);
 	}
-
-	print(edges);
 }
 
 function setEdgeTypes(edges){
