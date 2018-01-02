@@ -4,8 +4,8 @@ function FractalEdge(node1, node2, w, t, s){
 	this.weight = w;
 	this.type = t;
 	this.stroke = s;
-	this.node1 = node1;
-	this.node2 = node2;
+	this.node1 = nodeCopy([node1]);
+	this.node2 = nodeCopy([node2]);
 
 	this.show = function(){
 		push();
@@ -18,11 +18,13 @@ function FractalEdge(node1, node2, w, t, s){
 	this.setStart = function(x, y){
 		this.start.x = x;
 		this.start.y = y;
+		this.node1.setPosition(x, y);
 	}
 
 	this.setEnd = function(x, y){
 		this.end.x = x;
 		this.end.y = y;
+		this.node2.setPosition(x, y);
 	}
 
 	this.setWeight = function(w){

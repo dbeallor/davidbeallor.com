@@ -20,7 +20,8 @@ var edges_drawn;
 var control_box;
 var screen_bounds = [0, 720, 3, 455];
 var load_bar;
-var edges_to_replace;
+var next_edge_count;
+var prev_edge_count;
 var prev_click;
 var canvas_dims = [720, 520];
 var upload_button;
@@ -52,6 +53,7 @@ var zoom_mode;
 var dragging_cursor_control;
 var exit_button;
 var capturing_screen;
+var level;
 
 // =======================================================================================================
 // ==PRELOAD AND SETUP
@@ -86,7 +88,8 @@ function setup() {
 	r_seed_data = [];
 	types = [];
 
-	edges_to_replace = 0;
+	next_edge_count = 0;
+	prev_edge_count = 0;
 
 	nodes[0] = new FractalNode(0, 0);
 
@@ -115,6 +118,7 @@ function setup() {
 	ready_to_load = false;
 
 	saving_seed = false;
+	save_file_name = 'untitled';
 
 	text_input = createInput('enter filename');
 	text_input.position(sandbox.pos.x - 60, sandbox.pos.y - 20);
@@ -144,6 +148,7 @@ function setup() {
 	dragging_cursor_control = false;
 
 	ready = false;
+	level = 1;
 }
 
 // =======================================================================================================
@@ -175,8 +180,8 @@ function draw() {
 
 	else if (fractalize){
 		advance();
-		if (edges_to_replace > 100){
-			load_bar.setPercentage(edges.length / edges_to_replace);
+		if (next_edge_count > 100){
+			load_bar.setPercentage((edges.length - prev_edge_count) / (next_edge_count - prev_edge_count));
 			load_bar.show();
 		}
 	}
@@ -410,6 +415,14 @@ function translateShape(){
 		}
 	}
 
+	for (var i = 0; i < nodes_copy.length; i++){
+		nodes_copy[i].setPosition([nodes_copy[i].pos.x + deltaX, nodes_copy[i].pos.y + deltaY]);
+		if (i > 0){
+			edges_copy[i-1].setStart(edges_copy[i-1].start.x + deltaX, edges_copy[i-1].start.y + deltaY);
+			edges_copy[i-1].setEnd(edges_copy[i-1].end.x + deltaX, edges_copy[i-1].end.y + deltaY);
+		}
+	}
+
 	edges_drawn = false;
 }
 
@@ -431,6 +444,18 @@ function zoom(delta, center){
 
 			new_end = scalePoint(edges[i-1].end.x, edges[i-1].end.y, delta, center);
 			edges[i-1].setEnd(new_end[0], new_end[1]);
+		}
+	}
+
+	for (var i = 0; i < nodes_copy.length; i++){
+		new_pos = scalePoint(nodes_copy[i].pos.x, nodes_copy[i].pos.y, delta, center);
+		nodes_copy[i].setPosition([new_pos[0], new_pos[1]]);
+		if (i > 0){
+			new_start = scalePoint(edges_copy[i-1].start.x, edges_copy[i-1].start.y, delta, center);
+			edges_copy[i-1].setStart(new_start[0], new_start[1]);
+
+			new_end = scalePoint(edges_copy[i-1].end.x, edges_copy[i-1].end.y, delta, center);
+			edges_copy[i-1].setEnd(new_end[0], new_end[1]);
 		}
 	}
 
@@ -632,7 +657,7 @@ function showSelection(){
 }
 
 function subdivide(idx){
-	var new_base = createVector(nodes[idx].pos.x - nodes[idx-1].pos.x, nodes[idx].pos.y - nodes[idx-1].pos.y);
+	var new_base = createVector(nodes[idx].pos.x - nodes[idx - 1].pos.x, nodes[idx].pos.y - nodes[idx - 1].pos.y);
 	var angle_offset = polarAngle(new_base.x, new_base.y);
 	var mag_scaler = new_base.mag();
 	var new_nodes = [];
@@ -788,21 +813,28 @@ function getReadyToFractalize(){
 	if (edges.length <= 10000){
 		fractalize = true;
 		current_edge = edges.length;
-		var level = floor(Math.log(edges.length) / Math.log(seed_data.length)) + 1;
-		edges_to_replace = pow(seed_data.length, level);
+		prev_edge_count = edges.length;
+		var num_unreplaced = 0;
+		for (var i = 0; i < edges.length; i++){
+			if (edges[i].type > 3)
+				num_unreplaced++;
+		}
+		next_edge_count = num_unreplaced + (edges.length - num_unreplaced) * seed_data.length;
+		level++;
 	}
 	else {
-		edges = edgeCopy(edges_copy);
 		nodes = nodeCopy(nodes_copy);
+		edges = edgeCopy(edges_copy);
 		scaleColours();
 		edges_drawn = false;
+		level = 1;
 	}	
 }
 
 function advance(){
 	speed = min(100, max(1, floor(edges.length / 100)));
 	for (var i = 0; i < speed; i++){
-		if (edges[current_edge - 1].type != 4 && edges[current_edge - 1].type != 5)
+		if (edges[current_edge - 1].type < 4)
 			update(current_edge);
 		current_edge--;
 		if (current_edge == 0){
@@ -909,14 +941,18 @@ function polarAngle(x, y){
 // ==LOADING
 // =======================================================================================================
 function nodeCopy(n){
-	result = [];
-	for (var i = 0; i < n.length; i++)
-		result[i] = new FractalNode(n[i].pos.x, n[i].pos.y);
+	if (n.length > 1){
+		var result = [];
+		for (var i = 0; i < n.length; i++)
+			result[i] = new FractalNode(n[i].pos.x, n[i].pos.y);
+	}
+	else
+		return new FractalNode(n[0].pos.x, n[0].pos.y);
 	return result;
 }
 
 function edgeCopy(e){
-	result = [];
+	var result = [];
 	for (var i = 0; i < e.length; i++)
 		result[i] = new FractalEdge(e[i].node1, e[i].node2, e[i].weight, e[i].type, e[i].stroke);
 	return result;
