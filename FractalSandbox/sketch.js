@@ -646,10 +646,11 @@ function showSelection(){
 		edges[i].show();
 
 	for (var i = 0; i < temp_edges.length; i++)
-		temp_edges[i].show();
+		if (temp_edges[i].type < 5)
+			temp_edges[i].show();
 
 	for (var i = idx; i < edges.length; i++)
-		if (edges[i].type != 5)
+		if (edges[i].type < 5)
 			edges[i].show();
 
 	for (var i = 0; i < nodes_copy.length; i++)
@@ -742,24 +743,34 @@ function getNewType(current_type, data, j){
 
 function updateGenerator(skip, hide){
 	if (!skip && !hide){
+		edges_copy[idx-1].setType(edges[idx-1].type);
 		seed_data[idx-1][2] = edges[idx-1].type;
 		r_seed_data[r_seed_data.length - idx][2] = edges[idx-1].type;
-		edges.splice(idx - 1, 1);
-		edges = splice(edges, temp_edges, idx - 1);
-		nodes = splice(nodes, temp_nodes, idx);
 	}
 	else if (skip){
-		edges[idx-1].setType(4);
 		edges_copy[idx-1].setType(4);
 		seed_data[idx-1][2] = 4;
 		r_seed_data[r_seed_data.length - idx][2] = 4;
 	}
 	else if (hide){
-		edges[idx-1].setType(5);
 		edges_copy[idx-1].setType(5);
 		seed_data[idx-1][2] = 5;
 		r_seed_data[r_seed_data.length - idx][2] = 5;
 	}
+
+	edges = edgeCopy(edges_copy);
+	nodes = nodeCopy(nodes_copy);
+	for (var i = edges.length - 1; i >= idx - 1; i--){
+		if (seed_data[i][2] < 4){
+			var result = subdivide(i + 1);
+			temp_nodes = result[0];
+			temp_edges = result[1];
+			edges.splice(i, 1);
+			edges = splice(edges, temp_edges, i);
+			nodes = splice(nodes, temp_nodes, i + 1);
+		}
+	}
+
 	idx--;
 	if (idx == 0){
 		nodes = nodeCopy(nodes_copy);
