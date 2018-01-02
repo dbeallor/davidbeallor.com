@@ -509,7 +509,7 @@ function closestGridPoint(x, y, coords){
 
 function updateSeed(){
 	nodes = append(nodes, new FractalNode(0, 0));
-	edges = append(edges, new FractalEdge(nodes[nodes.length - 2], nodes[nodes.length - 1], 2, 0, [200, 200, 200]));
+	edges = append(edges, new FractalEdge(nodes[nodes.length - 2].pos, nodes[nodes.length - 1].pos, 2, 0, [200, 200, 200]));
 }
 
 function showSeed(){
@@ -552,8 +552,10 @@ function toggleGridlines(){
 // ==GENERATOR CREATION
 // =======================================================================================================
 function setupForGenerator(){
-	nodes.splice(nodes.length -1, 1);
+	nodes.splice(nodes.length - 1, 1);
 	edges.splice(edges.length - 1, 1);
+
+	print(edges);
 
 	for (var i = 0; i < edges.length; i++)
 		edges[i].setWeight(1);
@@ -693,15 +695,15 @@ function subdivide(idx){
 
 		// Add an edge between this node and the previous one
 		if (j-1 >= 0)
-			new_edges = append(new_edges, new FractalEdge(new_nodes[j-1], new_nodes[j], 1, new_type, [200, 200, 200]));
-		// 													node1             node2   weight  type         stroke
+			new_edges = append(new_edges, new FractalEdge(new_nodes[j-1].pos, new_nodes[j].pos, 1, new_type, [200, 200, 200]));
+		// 													start                 end   weight  type         stroke
 		else
-			new_edges = append(new_edges, new FractalEdge(nodes[idx-1], new_nodes[j], 1, new_type, [200, 200, 200]));
+			new_edges = append(new_edges, new FractalEdge(nodes[idx-1].pos, new_nodes[j].pos, 1, new_type, [200, 200, 200]));
 	}
 
 	// Finally, add an edge connecting the last node in the seed to the next node in nodes
 	new_type = getNewType(edges[idx - 1].type, data, data.length - 1);
-	new_edges = append(new_edges, new FractalEdge(new_nodes[new_nodes.length - 1], nodes[idx], 1, new_type, [200, 200, 200]));
+	new_edges = append(new_edges, new FractalEdge(new_nodes[new_nodes.length - 1].pos, nodes[idx].pos, 1, new_type, [200, 200, 200]));
 
 	return [new_nodes, new_edges];
 }
@@ -759,16 +761,11 @@ function updateGenerator(skip, hide){
 	}
 
 	edges = edgeCopy(edges_copy);
+	print(edges_copy);
 	nodes = nodeCopy(nodes_copy);
 	for (var i = edges.length - 1; i >= idx - 1; i--){
-		if (seed_data[i][2] < 4){
-			var result = subdivide(i + 1);
-			temp_nodes = result[0];
-			temp_edges = result[1];
-			edges.splice(i, 1);
-			edges = splice(edges, temp_edges, i);
-			nodes = splice(nodes, temp_nodes, i + 1);
-		}
+		if (edges[i].type < 4)
+			update(i + 1);
 	}
 
 	idx--;
@@ -779,6 +776,8 @@ function updateGenerator(skip, hide){
 		creating_generator = false;
 		showButtons(["FRACTALIZE", "SAVE", "LOAD", "COLOR\nSCHEME", "RESTART", "HELP"]);
 	}
+
+	print(edges);
 }
 
 function setEdgeTypes(edges){
@@ -965,7 +964,7 @@ function nodeCopy(n){
 function edgeCopy(e){
 	var result = [];
 	for (var i = 0; i < e.length; i++)
-		result[i] = new FractalEdge(e[i].node1, e[i].node2, e[i].weight, e[i].type, e[i].stroke);
+		result[i] = new FractalEdge(e[i].start, e[i].end, e[i].weight, e[i].type, e[i].stroke);
 	return result;
 }
 
@@ -998,7 +997,7 @@ function loadSeed(loaded_data){
 		specs = split(loaded_data[i], '%');
 		nodes[i] = new FractalNode(parseFloat(specs[0]), parseFloat(specs[1]));
 		if (i > 0)
-			edges[i-1] = new FractalEdge(nodes[i-1], nodes[i], 1, parseFloat(specs[2]), [200, 200, 200]);
+			edges[i-1] = new FractalEdge(nodes[i-1].pos, nodes[i].pos, 1, parseFloat(specs[2]), [200, 200, 200]);
 	}
 
 	getSeedData();
