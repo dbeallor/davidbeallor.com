@@ -58,7 +58,6 @@ function Sandbox(x, y, w){
 			this.coords = this.square_coords;
 		else if (this.type == 1){
 			this.coords = this.triangle_coords;
-			console.log(this.coords);
 		}
 	}
 
@@ -166,4 +165,3 @@ function Sandbox(x, y, w){
 		pop();
 	}
 }
-
