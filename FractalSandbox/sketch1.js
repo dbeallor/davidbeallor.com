@@ -54,9 +54,6 @@ var dragging_cursor_control;
 var exit_button;
 var capturing_screen;
 var level;
-var new_layer;
-var colour_pickers;
-var choosing_color_scheme;
 
 // =======================================================================================================
 // ==PRELOAD AND SETUP
@@ -139,8 +136,8 @@ function setup() {
 	show_screenshot_button = false;
 
 	loading_sample_seed = false;
-	var file_names = ["sierpinski.txt", "snowflake.txt", "pinwheel.txt", "zigzag.txt", "tree.txt", "koch.txt", "spike.txt"];
-	var aliases = ["Sierpinski", "Snowflake", "Pinwheel", "Zig Zag", "Tree", "Koch", "Spike"];
+	var file_names = ["sierpinski.txt", "snowflakeA.txt", "snowflakeB.txt", "zigzag.txt", "tree.txt", "koch.txt", "spike.txt"];
+	var aliases = ["Sierpinski", "Snowflake A", "Snowflake B", "Zig Zag", "Tree", "Koch", "Spike"];
 	file_browser = new FileBrowser(file_names, aliases, "Sample Seeds", sandbox.pos.x, sandbox.pos.y, 200, 300);
 
 	help = true;
@@ -152,10 +149,6 @@ function setup() {
 
 	ready = false;
 	level = 1;
-	new_layer = createGraphics(canvas_dims[0] * 2, canvas_dims[1] * 2);
-
-	choosing_color_scheme = false;
-	initializeColourPickers();
 }
 
 // =======================================================================================================
@@ -167,8 +160,8 @@ function draw() {
 	else
 		cursor(ARROW)
 
-	if (creating_seed || creating_generator){
-		background(color(colour_pickers[0].value()));
+	if (creating_seed || creating_generator || fractalize){
+		background(51);
 	}
 
 	if (creating_seed){
@@ -215,7 +208,6 @@ function draw() {
 	show_save_button ? save_button.show() : save_button.hide();
 	show_screenshot_button ? screenshot_button.show() : screenshot_button.hide();
 	show_drop_area ? drop_area.show() : drop_area.hide();
-	choosing_color_scheme ? showColourPickers() : hideColourPickers();
 
 	if (dragging_cursor_control){
 		if (!mouseIsPressed)
@@ -288,9 +280,6 @@ function mousePressed(){
 
 				else if (buttonClicked("FRACTALIZE"))
 					getReadyToFractalize();
-
-				else if (buttonClicked("COLOR\nSCHEME"))
-					toggleColourSchemeDialog();
 
 				ready = false;
 			}
@@ -401,12 +390,12 @@ function mouseWheel(event){
 }
 
 function withinBounds(x, y, bounds){
-	return (x >= bounds[0] && x <= bounds[1] && y >= bounds[2] && y <= bounds[3]);
+	return (x >= bounds[0] && x < bounds[1] && y >= bounds[2] && y < bounds[3]);
 	// 			left             right           bottom             top
 }
 
 function toggleHelpScreen(){
-	help = help ? false : true;
+	help ? help = false : help = true;
 	edges_drawn = false;
 	exit_button.setPosition(sandbox.pos.x + 257, sandbox.pos.y - 195);
 }
@@ -851,7 +840,8 @@ function getReadyToFractalize(){
 	}
 
 	next_edge_count = num_unreplaced + (edges.length - num_unreplaced) * seed_data.length;
-	if (next_edge_count <= 50000){
+	console.log(next_edge_count);
+	if (next_edge_count <= 30000){
 		current_edge = edges.length;
 		fractalize = true;
 		level++;
@@ -859,31 +849,30 @@ function getReadyToFractalize(){
 	else {
 		nodes = nodeCopy(nodes_copy);
 		edges = edgeCopy(edges_copy);
+		scaleColours();
 		edges_drawn = false;
 		level = 1;
-		scaleColours();
-	}
-
-	background(color(colour_pickers[0].value()));;	
+	}	
 }
 
 function advance(){
-	new_layer.clear();
-	speed = constrain(floor(edges.length / 50), 1, 200);
+	speed = min(100, max(1, floor(edges.length / 100)));
 	for (var i = 0; i < speed; i++){
 		if (edges[current_edge - 1].type < 4)
 			update(current_edge);
-		else if (edges[current_edge - 1].type == 4)
-			edges[current_edge - 1].layer(current_edge - 1);
 		current_edge--;
 		if (current_edge == 0){
 			fractalize = false;
-			edges_drawn = false;
 			break;
 		}
 	}
 
-	image(new_layer, width / 2, height / 2, new_layer.width / 2, new_layer.height / 2);
+	scaleColours();
+	for (var i = edges.length - 1; i >= 0; i--)
+		if (edges[i].type != 5)
+			edges[i].show();
+
+	edges_drawn = false;
 }
 
 function update(e){
@@ -893,17 +882,12 @@ function update(e){
 	edges.splice(e - 1, 1);
 	edges = splice(edges, temp_edges, e - 1);
 	nodes = splice(nodes, temp_nodes, e);
-
-	if (fractalize)
-		for (var i = temp_edges.length - 1; i >= 0; i--)
-			if (temp_edges[i].type < 5)
-				temp_edges[i].layer(e - 1);
 }
 
 function refresh(){
-	background(color(colour_pickers[0].value()));;
+	background(51);
 	for (var i =  edges.length - 1; i >= 0; i--)
-		if (edges[i].type != 5 && edges[i].onScreen())	
+		if (edges[i].type != 5)	
 			edges[i].show();
 	edges_drawn = true;
 }
@@ -913,8 +897,19 @@ function scaleColours(){
 	var r, g, b;
 	for (var i = 0; i < l; i++){
 		// Map position in edges array to value between 0 and 1
-		var x = map(i, 0, l-1, 0, 1);
-		edges[i].setStroke(colourMap(x));
+		x = map(i, 0, l-1, 0, 1);
+
+		// Shifted gaussians map pixel channels
+		r = 0.79788*Math.exp(-pow(1*(x - 1.0), 2)/0.5);
+		r = map(r, 0, 1, 20, 255);
+
+		g = 0.79788*Math.exp(-pow(2*(x - 0.5), 2)/0.5);
+		g = map(g, 0, 1, 20, 255);
+		
+		b = 0.79788*Math.exp(-pow(1*(x - 0.0), 2)/0.5);
+		b = map(b, 0, 1, 20, 255);
+
+		edges[i].setStroke([r, g, b]);
 	}
 }
 
@@ -966,24 +961,6 @@ function polarAngle(x, y){
 		return 0;
 }
 
-function parameterizedLine(start, end){
-	var A = end[1] - start[1];
-	var B = start[0] - end[0];
-	var C = A * start[0] + B * start[1];
-	return [A, B, C];
-}
-
-function segmentsIntersection(s1, s2){
-	var det = s1[0] * s2[1] - s1[1] * s2[0];
-	if (det == 0)
-		return [-9999, -9999];
-	else{
-		var x = (s2[1] * s1[2] - s1[1] * s2[2]) / det;
-		var y = (s1[0] * s2[2] - s2[0] * s1[2]) / det;
-		return [x, y];
-	}
-}
-
 // =======================================================================================================
 // ==LOADING
 // =======================================================================================================
@@ -1006,10 +983,10 @@ function edgeCopy(e){
 }
 
 function toggleLoadDialog(){
-	show_upload_button = show_upload_button ? false : true;
-	show_drop_area = show_drop_area ? false : true;
-	loading_seed = loading_seed ? false : true;
-	edges_drawn = !loading_seed ? false : null;
+	show_upload_button ? show_upload_button = false : show_upload_button = true;
+	show_drop_area ? show_drop_area = false : show_drop_area = true;
+	loading_seed ? loading_seed = false : loading_seed = true;
+	!loading_seed ? edges_drawn = false : null;
 	delay = true;
 	exit_button.setPosition(sandbox.pos.x + 110, sandbox.pos.y - 60);
 }
@@ -1029,13 +1006,9 @@ function loadSeed(loaded_data){
 	ready_to_load = false;
 	nodes = [];
 
-	var colors = split(loaded_data[0], '%');
-	for (var i = 0; i < colour_pickers.length; i++)
-		colour_pickers[i].value(colors[i]);
-
 	var specs;
-	for (var i = 0; i < loaded_data.length - 2; i++){
-		specs = split(loaded_data[i + 1], '%');
+	for (var i = 0; i < loaded_data.length - 1; i++){
+		specs = split(loaded_data[i], '%');
 		nodes[i] = new FractalNode(parseFloat(specs[0]), parseFloat(specs[1]));
 		if (i > 0)
 			edges[i-1] = new FractalEdge(nodes[i-1].pos, nodes[i].pos, 1, parseFloat(specs[2]), [200, 200, 200]);
@@ -1107,14 +1080,11 @@ function loadSample(){
 // ==SAVING
 // =======================================================================================================
 function toggleSaveDialog(){
-	show_text_input = show_text_input ? false : true;
-	show_save_button = show_save_button ? false : true;
-	show_screenshot_button = show_screenshot_button ? false : true;
-	saving_seed = saving_seed ? false : true;
-
-	if (!saving_seed) 
-		edges_drawn = false;
-
+	show_text_input ? show_text_input = false : show_text_input = true;
+	show_save_button ? show_save_button = false : show_save_button = true;
+	show_screenshot_button ? show_screenshot_button = false : show_screenshot_button = true;
+	saving_seed ? saving_seed = false : saving_seed = true;
+	!saving_seed ? edges_drawn = false : null;
 	exit_button.setPosition(sandbox.pos.x + 125, sandbox.pos.y - 45);
 }
 
@@ -1124,8 +1094,6 @@ function updateSaveFileName(){
 
 function saveSeed(){
 	var save_data = [];
-	save_data = append(save_data, colour_pickers[0].value() + '%' + colour_pickers[1].value() + '%' 
-		+ colour_pickers[2].value() + '%' + colour_pickers[3].value());
 	for (var i = 0; i < nodes_copy.length; i++)
 		if (i == 0)
 			save_data = append(save_data, str(nodes_copy[i].pos.x) + "%" + str(nodes_copy[i].pos.y));
@@ -1255,11 +1223,6 @@ function showOpenWindows(){
 		help_screen.show();
 		exit_button.show();
 	}
-
-	if (choosing_color_scheme){
-		showColourSchemeBox();
-		exit_button.show();
-	}
 }
 
 function closeOpenWindows(){
@@ -1276,91 +1239,14 @@ function closeOpenWindows(){
 		loading_seed = false;
 	}
 
-	if (loading_sample_seed)
-		loading_sample_seed = false;
+	loading_sample_seed ? loading_sample_seed = false : null;
 
-	if (help)
-		help = false;
-
-	if (choosing_color_scheme){
-		choosing_color_scheme = false;
-		scaleColours();
-	}
+	help ? help = false : null;
 
 	edges_drawn = false;
 	ready = false;
 }
 
 function noOpenWindows(){
-	return (!help && !saving_seed && !loading_seed && !loading_sample_seed && !choosing_color_scheme);
-}
-
-// =======================================================================================================
-// ==COLOR SCHEMES
-// =======================================================================================================
-function toggleColourSchemeDialog(){
-	choosing_color_scheme = choosing_color_scheme ? false : true;
-
-	if (!choosing_color_scheme)
-		edges_drawn = false;
-
-	exit_button.setPosition(sandbox.pos.x + 87, sandbox.pos.y - 75);
-}
-
-function initializeColourPickers(){
-	colour_pickers = [];
-	for (var i = 0; i < 4; i++){
-		colour_pickers[i] = createInput();
-		colour_pickers[i].attribute('type', 'color');
-		colour_pickers[i].position(width / 2 + 25, height / 2 - 75 + 30 * i);
-	}
-	colour_pickers[0].value("#333333");
-	colour_pickers[1].value("#ff0000");
-	colour_pickers[2].value("#00fff2");
-	colour_pickers[3].value("#fa00ff");
-}
-
-function showColourPickers(){
-	for (var i = 0; i < colour_pickers.length; i++)
-		colour_pickers[i].show();
-}
-
-function hideColourPickers(){
-	for (var i = 0; i < colour_pickers.length; i++)
-		colour_pickers[i].hide();
-}
-
-function showColourSchemeBox(){
-	push();
-		fill(200);
-		stroke(0);
-		strokeWeight(7);
-		rectMode(CENTER);
-		rect(sandbox.pos.x, sandbox.pos.y, 200, 175, 10);
-		fill(0);
-		noStroke();
-		textAlign(CENTER, CENTER);
-		textSize(14);
-		textStyle(BOLD);
-		text("Choose Your Colours", sandbox.pos.x, sandbox.pos.y - 65);
-		textStyle(NORMAL);
-		text("background:", sandbox.pos.x - 27, sandbox.pos.y - 32);
-		text("color1:", sandbox.pos.x - 27, sandbox.pos.y - 2);
-		text("color2:", sandbox.pos.x - 27, sandbox.pos.y + 28);
-		text("color3:", sandbox.pos.x - 27, sandbox.pos.y + 58);
-	pop();
-}
-
-// takes input x in [0, 1]
-function colourMap(x){
-	var from = x <= 0.5 ? color(colour_pickers[1].value()) : color(colour_pickers[2].value());
-	var to = x <= 0.5 ? color(colour_pickers[2].value()) : color(colour_pickers[3].value());
-
-	x = x <= 0.5 ? map(x, 0, 0.5, 0, 1) : map(x, 0.5, 1, 0, 1);
-
-	colorMode(HSB);
-	var my_colour = lerpColor(from, to, x);
-	colorMode(RGB);
-	my_colour.levels[3] = constrain(my_colour.levels[3], 0, 210);
-	return my_colour;
+	return (!help && !saving_seed && !loading_seed && !loading_sample_seed);
 }
