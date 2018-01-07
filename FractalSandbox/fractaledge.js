@@ -7,6 +7,10 @@ function FractalEdge(start, end, w, t, s){
 
 	this.show = function(){
 		push();
+			if (fractalize){
+				var x = map(next_edge_count - (edges.length - current_edge + 1), 0, next_edge_count - 1, 0, 1);
+				this.setStroke(colourMap(x));
+			}
 			stroke(this.stroke);
 			strokeWeight(this.weight);
 			line(this.start.x, this.start.y, this.end.x, this.end.y);
@@ -33,14 +37,6 @@ function FractalEdge(start, end, w, t, s){
 
 	this.setType = function(t){
 		this.type = t;
-	}
-
-	this.layer = function(idx){
-		var x = map(next_edge_count - (edges.length - idx), 0, next_edge_count - 1, 0, 1);
-		this.setStroke(colourMap(x));
-		new_layer.stroke(this.stroke);
-		new_layer.strokeWeight(this.weight);
-		new_layer.line(this.start.x, this.start.y, this.end.x, this.end.y);
 	}
 
 	this.onScreen = function(){

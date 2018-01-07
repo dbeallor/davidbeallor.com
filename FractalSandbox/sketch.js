@@ -54,7 +54,6 @@ var dragging_cursor_control;
 var exit_button;
 var capturing_screen;
 var level;
-var new_layer;
 var colour_pickers;
 var choosing_color_scheme;
 
@@ -152,7 +151,6 @@ function setup() {
 
 	ready = false;
 	level = 1;
-	new_layer = createGraphics(canvas_dims[0] * 2, canvas_dims[1] * 2);
 
 	choosing_color_scheme = false;
 	initializeColourPickers();
@@ -380,6 +378,9 @@ function keyPressed(){
 
 		if (key == 'H')
 			toggleHelpScreen();
+
+		if (key == 'C')
+			toggleColourSchemeDialog();
 	}
 
 	if (help){
@@ -868,13 +869,12 @@ function getReadyToFractalize(){
 }
 
 function advance(){
-	new_layer.clear();
-	speed = constrain(floor(edges.length / 50), 1, 200);
+	speed = constrain(floor(edges.length / 50), 20, 200);
 	for (var i = 0; i < speed; i++){
 		if (edges[current_edge - 1].type < 4)
 			update(current_edge);
 		else if (edges[current_edge - 1].type == 4)
-			edges[current_edge - 1].layer(current_edge - 1);
+			edges[current_edge - 1].show();
 		current_edge--;
 		if (current_edge == 0){
 			fractalize = false;
@@ -882,8 +882,6 @@ function advance(){
 			break;
 		}
 	}
-
-	image(new_layer, width / 2, height / 2, new_layer.width / 2, new_layer.height / 2);
 }
 
 function update(e){
@@ -897,7 +895,7 @@ function update(e){
 	if (fractalize)
 		for (var i = temp_edges.length - 1; i >= 0; i--)
 			if (temp_edges[i].type < 5)
-				temp_edges[i].layer(e - 1);
+				temp_edges[i].show();
 }
 
 function refresh(){
@@ -964,24 +962,6 @@ function polarAngle(x, y){
 		return Math.PI;
 	else
 		return 0;
-}
-
-function parameterizedLine(start, end){
-	var A = end[1] - start[1];
-	var B = start[0] - end[0];
-	var C = A * start[0] + B * start[1];
-	return [A, B, C];
-}
-
-function segmentsIntersection(s1, s2){
-	var det = s1[0] * s2[1] - s1[1] * s2[0];
-	if (det == 0)
-		return [-9999, -9999];
-	else{
-		var x = (s2[1] * s1[2] - s1[1] * s2[2]) / det;
-		var y = (s1[0] * s2[2] - s2[0] * s1[2]) / det;
-		return [x, y];
-	}
 }
 
 // =======================================================================================================
@@ -1315,9 +1295,9 @@ function initializeColourPickers(){
 		colour_pickers[i].position(width / 2 + 25, height / 2 - 75 + 30 * i);
 	}
 	colour_pickers[0].value("#333333");
-	colour_pickers[1].value("#ff0000");
-	colour_pickers[2].value("#00fff2");
-	colour_pickers[3].value("#fa00ff");
+	colour_pickers[1].value("#ff0018");
+	colour_pickers[2].value("#00f5ff");
+	colour_pickers[3].value("#ff2900");
 }
 
 function showColourPickers(){
