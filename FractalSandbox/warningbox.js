@@ -17,6 +17,7 @@ function WarningBox(x, y, width, height, message, continue_listener, cancel_list
 				translate(this.pos.x, this.pos.y);
 				fill(0);
 				noStroke();
+				textFont("Arial");
 				textAlign(CENTER, CENTER);
 				text(this.message, 0, -15);
 			pop();
@@ -34,9 +35,11 @@ function WarningBox(x, y, width, height, message, continue_listener, cancel_list
 	}
 
 	this.onClick = function(){
-		if (this.window.onClick()){
-			this.close();
-			return true;
+		if (this.visible){
+			if (this.window.onClick()){
+				this.close();
+				return true;
+			}
 		}
 		return false;
 	}

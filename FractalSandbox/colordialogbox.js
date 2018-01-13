@@ -34,6 +34,7 @@ function ColorDialogBox(title, x, y, width, height){
 			push();
 				fill(0);
 				noStroke();
+				textFont("Arial");
 				text("Background: ", this.pos.x - 60, this.pos.y - 10);
 				text("Gradient: ", this.pos.x - 85, this.pos.y + 20);
 			pop();
@@ -65,9 +66,11 @@ function ColorDialogBox(title, x, y, width, height){
 	}
 
 	this.onClick = function(){
-		if (this.window.onClick()){
-			this.close();
-			return true;
+		if (this.visible){
+			if (this.window.onClick()){
+				this.close();
+				return true;
+			}
 		}
 		return false;
 	}

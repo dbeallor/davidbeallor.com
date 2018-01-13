@@ -35,6 +35,7 @@ function SaveDialogBox(title, x, y, width, height, file_type, save_listener, fil
 			push();
 				fill(0);
 				noStroke();
+				textFont("Arial");
 				textAlign(LEFT, CENTER);
 				text(this.file_type, this.pos.x + 35, this.pos.y + 1);
 			pop();
@@ -56,9 +57,11 @@ function SaveDialogBox(title, x, y, width, height, file_type, save_listener, fil
 	}
 
 	this.onClick = function(){
-		if (this.window.onClick()){
-			this.close();
-			return true;
+		if (this.visible){
+			if (this.window.onClick()){
+				this.close();
+				return true;
+			}
 		}
 		return false;
 	}

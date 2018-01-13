@@ -22,6 +22,7 @@ function p5Window(title, x, y, width, height){
 				rect(0, -this.height / 2 + this.header_height / 2, this.width, this.header_height, 5, 5, 0, 0);
 				fill(0);
 				noStroke();
+				textFont("Arial");
 				textStyle(BOLD);
 				textAlign(CENTER, CENTER);
 				text(this.title, 0, -this.height / 2 + this.header_height / 2 + 1);

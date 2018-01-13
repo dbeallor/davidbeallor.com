@@ -13,6 +13,7 @@ function MenuBarButton(menu_bar, folder, label, shortcut, onClick, y){
 	this.text_fill = this.disabled_text_fill;
 	this.enabled = false;
 	this.onClick = onClick;
+	this.checked = false;
 
 	this.setWidth = function(w){
 		this.width = w;
@@ -32,10 +33,17 @@ function MenuBarButton(menu_bar, folder, label, shortcut, onClick, y){
 			fill(this.text_fill);
 			noStroke();
 			textAlign(LEFT, CENTER);
+			textFont("Arial");
 			text(this.label, this.pos.x + 20, this.pos.y + this.height / 2);
 			if (this.enabled){
 				textAlign(RIGHT, CENTER);
 				text(this.shortcut, this.pos.x + this.width - 15, this.pos.y + this.height / 2);
+				if (this.checked){
+					stroke(this.text_fill);
+					strokeWeight(2);
+					line(this.pos.x + 6, this.pos.y + this.height / 2, this.pos.x + 9, this.pos.y + this.height - 8);
+					line(this.pos.x + 9, this.pos.y + this.height - 8, this.pos.x + 14, this.pos.y + 7);
+				}
 			}
 		pop();
 	}
@@ -89,5 +97,13 @@ function MenuBarButton(menu_bar, folder, label, shortcut, onClick, y){
 
 	this.shortcutPressed = function(){
 		return shortcutPressed(this.shortcut);
+	}
+
+	this.check = function(){
+		this.checked = true;
+	}
+
+	this.uncheck = function(){
+		this.checked = false;
 	}
 }

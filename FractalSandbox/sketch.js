@@ -36,38 +36,31 @@ var next_edge_count;
 var prev_edge_count;
 var max_out;
 
-// Cursor icons
-var cursor_image;
-var zoom_image;
-var rotate_image;
-var move_image;
-
-// Cursor control
-var cursor_control;
-var dragging_cursor_control;
-var prev_click;
-
 // Rotation
 var rotation_center;
-var rotate_mode;
+var drag_mode;
 
 // Keycodes
 var COMMAND_1 = 91;
 var COMMAND_2 = 93;
+
+// Zoom
+var zoom_mode;
 
 // Windows
 var menu_bar;
 var load_bar;
 var save_dialog;
 var screenshot_dialog;
-var capturing_screen;
 var save_file_name;
 var load_dialog;
 var color_dialog;
 var gallery;
 var gallery_images = [];
 var new_fractal_warning_box;
-var samples = ["brushstrokes", "parallelogram", "fingerprint", "honeycomb2", "honeycomb3", "jellyfish", "spiral6"];
+var samples = ["brushstrokes", "snowflake", "parallelogram", "sierpinski", "fingerprint", "pinwheel", "rhombi5", "honeycomb2", 
+	            "spiral8", "honeycomb3", "pinwheel3", "jellyfish",  "spiral16", "shield", "spiral7", "waves", "parallelogram2", 
+	            "spiral6"];
 var ready;
 
 // =======================================================================================================
@@ -76,13 +69,6 @@ var ready;
 function preload(){
 	for (var i = 0; i < samples.length; i++)
 		gallery_images[i] = loadImage("snapshots/" + samples[i] + ".png");
-
-	zoom_image = loadImage("zoom.png");
-	zoom_icon = loadImage("zoom_icon.png");
-	rotate_image = loadImage("rotate.png");
-	rotate_icon = loadImage("rotate_icon.png");
-	move_image = loadImage("move.png");
-	move_icon = loadImage('move_icon.png');
 }
 
 function setup() {
@@ -115,6 +101,9 @@ function setup() {
 	screen_bounds = [0, width, menu_bar.height, height];
 	grid = new Grid(width / 2, height / 2 + menu_bar.height / 2, windowWidth);
 
+	zoom_mode = 0;
+	drag_mode = 0;
+
 	load_bar = new LoadBar(screen_bounds[1] - 100, screen_bounds[3] - 15, 80, 10);
 
 	save_file_name = '';
@@ -136,8 +125,6 @@ function setup() {
 
 	initializeSampleGallery();
 
-	cursor_control = new CursorControl(5, menu_bar.height + 10);
-	dragging_cursor_control = false;
 	rotation_center = createVector(0, 0);
 
 	ready = false;
@@ -152,7 +139,21 @@ function setup() {
 // ==DRAW
 // =======================================================================================================
 function draw() {
-	showCursor() ? cursor(ARROW) : noCursor();
+	if (!creating_seed && !creating_generator){
+		if (max_out || fractalize)
+			canvas.style.cursor = 'wait';
+		else if (onScreen()){
+			if (drag_mode == 0)
+				canvas.style.cursor = 'move';
+			else
+				canvas.style.cursor = 'url(http://www.davidbeallor.com/FractalSandbox/rotate.cur)';	
+		}
+		else canvas.style.cursor = 'default';
+	}
+	else 
+		canvas.style.cursor = 'default';
+
+	canvas.style.cursor = 'grab';
 
 	background(color(color_dialog.color_pickers[0].value()));
 
@@ -178,55 +179,34 @@ function draw() {
 
 	drawFractal();
 
-	checkDragEvents();
-
 	if (fractalize)
 		showLoadBar();
 
-	if (!creating_seed && !creating_generator && !fractalize && !capturing_screen)
-		cursor_control.show();
-
-	if (dragging_cursor_control){
-		if (!mouseIsPressed)
-			dragging_cursor_control = false
-		else
-			translateCursorControl();
-	}
+	dragTranslateShape();
+	dragRotateShape();
 
 	if(!noOpenWindows())
 		theaterMode();
 
+	if (max_out && ready)
+		maxOutAux();
+
 	showWindows();
 
 	menu_bar.show();
-
-	if (!showCursor() && !capturing_screen)
-		showCursorIcon();
 	
 	if (!mouseIsPressed && !keyIsPressed && !fractalize)
 		ready = true;
 
 	// fill(255);
 	// text(mouseX + ", " + mouseY, 50, 50);
-}
-
-function showCursor(){
-	return (withinBounds(mouseX, mouseY, cursor_control.bounds) || !onScreen() || creating_seed || creating_generator || !noOpenWindows() || mouseOnMenuBar());
+	// text(okayToDrag(), 50, 50);
 }
 
 function drawFractal(){
 	var d = pixelDensity();
 	imageMode(CORNER);
 	image(fractal, 0, 0, fractal.width / d, fractal.height / d);
-}
-
-function checkDragEvents(){
-	if (okayToDrag()){
-		if (cursor_control.mode == 0)
-			dragTranslateShape();
-		else
-			dragRotateShape();
-	}
 }
 
 function showWindows(){
@@ -236,30 +216,6 @@ function showWindows(){
 	load_dialog.show();
 	color_dialog.show();
 	new_fractal_warning_box.show();
-}
-
-function showCursorIcon(){
-	push();
-		translate(mouseX, mouseY);
-		var cursor_image, size;
-		switch(cursor_control.mode){
-			case 0: 
-				cursor_image = move_image; 
-				size = 18; 
-				break;
-			case 1: 
-				cursor_image = zoom_image; 
-				size = 18; 
-				break;
-			case 2: 
-				cursor_image = rotate_image; 
-				size = 25; 
-				rotate(Math.PI/6); 
-				break;
-		}
-		imageMode(CENTER);
-		image(cursor_image, 0, 0, size, size);
-	pop();
 }
 
 function theaterMode(){
@@ -275,9 +231,6 @@ function theaterMode(){
 // ==MOUSE AND KEYBOARD EVENTS
 // =======================================================================================================
 function mousePressed(){
-	if (!showCursor())
-		noCursor();
-
 	if (mouseButton === LEFT){
 		if (noOpenWindows() && ready && menu_bar.folderIsOpen() < 0){
 			// Store click location globally for drag functionality
@@ -292,58 +245,27 @@ function mousePressed(){
 				updateGenerator(false, false);
 		}
 
-		if (clickout())
+		if (clickout()){
 			closeOpenWindows();
-
-		// Menu bar mouse events
-		if (!fractalize && ready)
-			menu_bar.onClick();
-
-		// Cursor control (cursor mode / zoom mode) mouse events
-		if (!creating_seed && !creating_generator && !fractalize && menu_bar.folderIsOpen() < 0){
-			if (withinBounds(mouseX, mouseY, cursor_control.cursor_bounds))
-				cursor_control.setMode(0);
-			if (withinBounds(mouseX, mouseY, cursor_control.zoom_bounds))
-				cursor_control.setMode(1);
-			if (withinBounds(mouseX, mouseY, cursor_control.rotate_bounds))
-				cursor_control.setMode(2);
+			ready = false;
 		}
 
-		// Check to see if cursor control is clicked within the drag area
-		if (!dragging_cursor_control && withinBounds(mouseX, mouseY, cursor_control.drag_bounds) && menu_bar.folderIsOpen() < 0)
-			dragging_cursor_control = true;
+		// Menu bar mouse events
+		if (!fractalize && ready){
+			if (menu_bar.onClick())
+				ready = false;
+		}
 
 		if (menu_bar.folderIsOpen() < 0 && !noOpenWindows()){
-			if (save_dialog.visible && save_dialog.onClick())
-				ready = false;
-			if (screenshot_dialog.visible && screenshot_dialog.onClick())
-				ready = false;
-			if (load_dialog.visible && load_dialog.onClick())
-				ready = false;
-			if (color_dialog.visible && color_dialog.onClick())
-				ready = false;
-			if (gallery.visible && gallery.onClick())
-				ready = false;
-			if (new_fractal_warning_box.visible && new_fractal_warning_box.onClick())
+			if (save_dialog.onClick() || screenshot_dialog.onClick() || load_dialog.onClick() || color_dialog.onClick() || gallery.onClick() || new_fractal_warning_box.onClick())
 				ready = false;
 		}
 	}
-
-	// Zoom mouse events
-	if (cursor_control.mode == 1 && onScreen() && !withinBounds(mouseX, mouseY, cursor_control.bounds) && menu_bar.folderIsOpen() < 0)
-		(mouseButton === LEFT) ? shortcutZoomIn() : shortcutZoomOut();
 }
 
 function keyPressed(){
-	if (noOpenWindows() && ready){
+	if (noOpenWindows() && ready)
 		menu_bar.checkShortcuts();
-
-		if (max_out)
-			maxOut();
-
-		if (key == 'M')
-			max_out = max_out ? false : true;
-	}
 
 	gallery.onKeyPress();
 	save_dialog.onKeyPress();
@@ -364,8 +286,8 @@ function shortcutPressed(token){
 
 function tokenToKeyCode(token){
 	switch(token){
-		case "⇨" : return RIGHT_ARROW; break;
-		case "⏎" : return ENTER; break;
+		case "space" : return 32; break;
+		case "enter" : return ENTER; break;
 		case "+" : return 187; break;
 		case "-" : return 189; break;
 		case "?" : return 191; break;		
@@ -374,12 +296,15 @@ function tokenToKeyCode(token){
 }
 
 function specialCharacter(token){
-	return (token == "⇨" || token == "⏎" || token == "+" || token == "-" || token == "?");
+	var chars = ["space", "enter", "+", "-", "?"];
+	return (chars.indexOf(token) > -1);
 }
 
 function mouseWheel(event){
+	if (zoom_mode == 1)
+		refreshRotationCenter();
 	if (!mouseIsPressed && !creating_seed && !creating_generator && !fractalize && noOpenWindows() && onScreen())
-		zoom(map(constrain(event.delta, -200, 200), -200, 200, 1.3, 0.7), [mouseX, mouseY]);
+		zoom(map(constrain(event.delta, -200, 200), -200, 200, 1.3, 0.7), zoom_mode == 0 ? [mouseX, mouseY] : [rotation_center.x, rotation_center.y]);
 	return false;
 }
 
@@ -388,12 +313,14 @@ function withinBounds(x, y, bounds){
 	// 			left             right           bottom             top
 }
 
-function toggleGallery(){
-	gallery.open();
+function openGallery(){
+	if (noOpenWindows())
+		gallery.open();
 }
 
-function toggleNewFractalWarningBox(){
-	new_fractal_warning_box.open();
+function openNewFractalWarningBox(){
+	if (noOpenWindows())
+		new_fractal_warning_box.open();
 }
 
 function closeWarningBox(){
@@ -478,21 +405,34 @@ function windowResized() {
 // ==TRANSLATION
 // =======================================================================================================
 function okayToDrag(){
+
+	// fill(255);
+	// text(fractalize, 50, 90);
+	// text(noOpenWindows(), 50, 130);
+	// text(onScreen(), 50, 150);
+	// text(ready, 50, 170);
+
 	if (mouseIsPressed && !creating_seed && !creating_generator && !fractalize){
-		if (!dragging_cursor_control && noOpenWindows() && cursor_control.mode != 1 && ready){
-			if (onScreen() && !withinBounds(mouseX, mouseY, cursor_control.bounds))
+		if (onScreen() && noOpenWindows()&& ready)
 				return true;
-		}
 	}
 	return false;
 }
 
 function dragTranslateShape(){
-	deltaX = mouseX - prev_click[0];
-	deltaY = mouseY - prev_click[1];
+	if (okayToDrag() && drag_mode == 0){
+		deltaX = mouseX - prev_click[0];
+		deltaY = mouseY - prev_click[1];
 
-	prev_click = [mouseX, mouseY];
-	translateShape(deltaX, deltaY);
+		prev_click = [mouseX, mouseY];
+		translateShape(deltaX, deltaY);
+	}
+}
+
+function dragModeTranslate(){
+	drag_mode = 0;
+	menu_bar.checkButton("Drag Mode Translate");
+	menu_bar.uncheckButton("Drag Mode Rotate");
 }
 
 function translateShape(deltaX, deltaY){
@@ -515,23 +455,24 @@ function translateShape(deltaX, deltaY){
 	edges_drawn = false;
 }
 
-function translateCursorControl(){
-	var new_x = constrain(mouseX - cursor_control.width / 2, screen_bounds[0], screen_bounds[1] - cursor_control.width);
-	var new_y = constrain(mouseY - cursor_control.drag_size / 2, screen_bounds[2], screen_bounds[3] - cursor_control.height);
-	cursor_control.setPosition(new_x, new_y);
-	cursor_control.resetBounds();
-}
-
 // =======================================================================================================
 // ==ROTATION
 // =======================================================================================================
 function dragRotateShape(){
-	refreshRotationCenter();
-	var prev_angle = polarAngle(prev_click[0] - rotation_center.x, prev_click[1] - rotation_center.y);
-	var current_angle = polarAngle(mouseX - rotation_center.x, mouseY - rotation_center.y);
-	var delta = current_angle - prev_angle;
-	prev_click = [mouseX, mouseY];
-	rotateShape(delta);
+	if (okayToDrag() && drag_mode == 1){
+		refreshRotationCenter();
+		var prev_angle = polarAngle(prev_click[0] - rotation_center.x, prev_click[1] - rotation_center.y);
+		var current_angle = polarAngle(mouseX - rotation_center.x, mouseY - rotation_center.y);
+		var delta = current_angle - prev_angle;
+		prev_click = [mouseX, mouseY];
+		rotateShape(delta);
+	}
+}
+
+function dragModeRotate(){
+	drag_mode = 1;
+	menu_bar.uncheckButton("Drag Mode Translate");
+	menu_bar.checkButton("Drag Mode Rotate");
 }
 
 function refreshRotationCenter(){
@@ -591,6 +532,18 @@ function edgeOnScreen(){
 // =======================================================================================================
 // ==ZOOM
 // =======================================================================================================
+function zoomModeMouse(){
+	zoom_mode = 0;
+	menu_bar.checkButton("Zoom Mode Mouse Centered");
+	menu_bar.uncheckButton("Zoom Mode Fractal Centered");
+}
+
+function zoomModeFractal(){
+	zoom_mode = 1;
+	menu_bar.checkButton("Zoom Mode Fractal Centered");
+	menu_bar.uncheckButton("Zoom Mode Mouse Centered");
+}
+
 function zoom(delta, center){
 	for (var i = 0; i < nodes.length; i++){
 		new_pos = scalePoint(nodes[i].pos.x, nodes[i].pos.y, delta, center);
@@ -980,8 +933,9 @@ function updateGenerator(skip, hide){
 		scaleColors();
 		refreshRotationCenter();
 		creating_generator = false;
-		menu_bar.enableButtons(["About FractalSandbox", "Level Up", "Download as .txt file...", "Capture Screenshot...", "Open File...", "Customize Color Scheme", "New Fractal", "Sample Gallery",
-								"Zoom In", "Zoom Out", "Center", "Rotate Left", "Rotate Right", "Custom Rotate"]);
+		menu_bar.enableButtons(["About FractalSandbox", "Level Up", "Max Level Up", "Timed Level Up", "Download as .txt file...", "Capture Screenshot...", "Open File...", 
+								"Redraw Seed", "Customize Color Scheme", "New Fractal", "Sample Gallery", "Zoom In", "Zoom Out", "Zoom Mode Mouse Centered", 
+								"Zoom Mode Fractal Centered", "Center", "Rotate Left 90°", "Rotate Right 90°", "Drag Mode Rotate", "Drag Mode Translate"]);
 	}
 }
 
@@ -1094,12 +1048,18 @@ function update(e){
 }
 
 function maxOut(){
+	max_out = true;
+	ready = false;
+}
+
+function maxOutAux(){
 	var start_time = millis();
 	while (true) {
 		getReadyToFractalize();
-		if (next_edge_count <= 50000 && millis() - start_time < 12500)
+		if (next_edge_count <= 50000 && millis() - start_time < 12500){
 			while (current_edge > 0)
 				advance();
+		}
 		else break;
 	} 
 	scaleColors();
@@ -1206,8 +1166,9 @@ function edgeCopy(e){
 	return result;
 }
 
-function toggleLoadDialog(){
-	load_dialog.open();
+function openLoadDialog(){
+	if (noOpenWindows())
+		load_dialog.open();
 }
 
 function handleFile(file){
@@ -1215,7 +1176,6 @@ function handleFile(file){
 }
 
 function loadSeed(loaded_data){
-	print(loaded_data)
 	load_dialog.upload_button.remove();
 	load_dialog.drop_area.remove();
 
@@ -1249,8 +1209,9 @@ function loadSeed(loaded_data){
 	refresh();
 	centerShape();
 	scaleColors();
-	menu_bar.enableButtons(["About FractalSandbox", "Level Up", "Download as .txt file...", "Capture Screenshot...", "Open File...", "Customize Color Scheme", "New Fractal", "Sample Gallery",
-							"Zoom In", "Zoom Out", "Center", "Rotate Left", "Rotate Right", "Custom Rotate", "Redraw Seed"]);
+	menu_bar.enableButtons(["About FractalSandbox", "Level Up", "Max Level Up", "Timed Level Up", "Download as .txt file...", "Capture Screenshot...", "Open File...", 
+							"Redraw Seed", "Customize Color Scheme", "New Fractal", "Sample Gallery", "Zoom In", "Zoom Out", "Zoom Mode Mouse Centered", 
+							"Zoom Mode Fractal Centered", "Center", "Rotate Left 90°", "Rotate Right 90°", "Drag Mode Rotate", "Drag Mode Translate"]);
 	gallery.close();
 }
 
@@ -1279,18 +1240,20 @@ function galleryDims(){
 }
 
 function loadSample(){
-	loadStrings("extras/" + samples[gallery.current_image] + ".txt", loadSeed);
+	loadStrings("samples/" + samples[gallery.current_image] + ".txt", loadSeed);
 }
 
 // =======================================================================================================
 // ==SAVING
 // =======================================================================================================
-function toggleSaveDialog(){
-	save_dialog.open();
+function openSaveDialog(){
+	if (noOpenWindows())
+		save_dialog.open();
 }
 
-function toggleScreenshotDialog(){
-	screenshot_dialog.open();
+function openScreenshotDialog(){
+	if (noOpenWindows())
+		screenshot_dialog.open();
 }
 
 function saveSeed(){
@@ -1339,11 +1302,11 @@ function screenPixels(){
 
 function redrawFractalOnly(){
 	// Redraw the screen with only the fractal showing
-	capturing_screen = true;
 	edges_drawn = false;
 	screenshot_dialog.close();
 	draw();
-	capturing_screen = false;
+
+	// Reopen screenshot dialog box, won't be shown until the next draw loop
 	screenshot_dialog.open();
 }
 
@@ -1359,35 +1322,40 @@ function initializeMenuBar(){
 
 	menu_bar.addFolder("FractalSandbox");
 	menu_bar.addButton("About FractalSandbox", "", null);
-	menu_bar.addButton("Sample Gallery", "", toggleGallery);
+	menu_bar.addButton("Sample Gallery", "W", openGallery);
 
 	menu_bar.addFolder("File");
-	menu_bar.addButton("New Fractal", "N", toggleNewFractalWarningBox);
-	menu_bar.addButton("Open File...", "O", toggleLoadDialog);
-	menu_bar.addButton("Download as .txt file...", "S", toggleSaveDialog);
-	menu_bar.addButton("Capture Screenshot...", "D", toggleScreenshotDialog);
+	menu_bar.addButton("New Fractal", "N", openNewFractalWarningBox);
+	menu_bar.addButton("Open File...", "O", openLoadDialog);
+	menu_bar.addButton("Download as .txt file...", "S", openSaveDialog);
+	menu_bar.addButton("Capture Screenshot...", "D", openScreenshotDialog);
 	menu_bar.addButton("Redraw Seed", "R", redrawSeed);
 
 	menu_bar.addFolder("Edit");
 	menu_bar.addButton("Undo", "Z", undo);
-	menu_bar.addButton("Skip Edge", "⇨", skipEdge);
 	menu_bar.addButton("Hide Edge", "H", hideEdge);
-
+	menu_bar.addButton("Skip Edge", "J", skipEdge);
+	
 	menu_bar.addFolder("View");
 	menu_bar.addButton("Zoom In", "+", shortcutZoomIn);
 	menu_bar.addButton("Zoom Out", "-", shortcutZoomOut);
+	menu_bar.addButton("Zoom Mode Mouse Centered", "1", zoomModeMouse);
+	menu_bar.checkButton("Zoom Mode Mouse Centered");
+	menu_bar.addButton("Zoom Mode Fractal Centered", "2", zoomModeFractal);
 	menu_bar.addButton("Toggle Gridlines", "G", toggleGridlines);
-	menu_bar.addButton("Center", "B", centerShape);
-	menu_bar.addButton("Rotate Left", "L", rotateLeft);
-	menu_bar.addButton("Rotate Right", "K", rotateRight);
-	menu_bar.addButton("Custom Rotate", "J", null);
+	menu_bar.addButton("Center", "space", centerShape);
+	menu_bar.addButton("Rotate Left 90°", "L", rotateLeft);
+	menu_bar.addButton("Rotate Right 90°", ";", rotateRight);
+	menu_bar.addButton("Drag Mode Translate", "3", dragModeTranslate);
+	menu_bar.checkButton("Drag Mode Translate");
+	menu_bar.addButton("Drag Mode Rotate", "4", dragModeRotate);
 
 	menu_bar.addFolder("Fractalization");
-	menu_bar.addButton("Lock Seed", "⏎", lockSeed);
-	menu_bar.addButton("Level Up", "⏎", getReadyToFractalize);
-	menu_bar.addButton("Timed Level Up", "W", null);
-	menu_bar.addButton("Maximum Level", "Q", null);
-	menu_bar.addButton("Customize Color Scheme", "C", toggleColorDialog);
+	menu_bar.addButton("Lock Seed", "enter", lockSeed);
+	menu_bar.addButton("Level Up", "enter", getReadyToFractalize);
+	menu_bar.addButton("Max Level Up", "M", maxOut);
+	menu_bar.addButton("Timed Level Up", ", ", null);
+	menu_bar.addButton("Customize Color Scheme", "C", openColorDialog);
 
 	menu_bar.addFolder("Help");
 	menu_bar.addButton("Tutorial", "T", null);
@@ -1413,8 +1381,9 @@ function mouseOnMenuBar(){
 // =======================================================================================================
 // ==COLOR SCHEMES
 // =======================================================================================================
-function toggleColorDialog(){
-	color_dialog.open();
+function openColorDialog(){
+	if (noOpenWindows())
+		color_dialog.open();
 }
 
 // takes input x in [0, 1]

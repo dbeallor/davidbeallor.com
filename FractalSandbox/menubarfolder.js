@@ -53,8 +53,9 @@ function MenuBarFolder(menu_bar, label){
 			fill(this.fill);
 			rect(this.pos.x, this.pos.y, this.width, this.height);
 			textAlign(CENTER, CENTER);
+			textFont("Arial");
 			translate(this.pos.x + this.width / 2, this.height / 2);
-			fill(this.text_fill)
+			fill(this.text_fill);
 			noStroke();
 			if (this.pos.x == 0)
 				textStyle(BOLD);

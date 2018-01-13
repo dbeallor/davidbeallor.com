@@ -80,8 +80,12 @@ function MenuBar(){
 					}
 				}
 			}
+			var folder_was_open = this.folderIsOpen() >= 0;
 			this.close();
+			if (folder_was_open) 
+				return true;
 		}
+		return false;
 	}
 
 	this.checkShortcuts = function(){
@@ -126,5 +130,27 @@ function MenuBar(){
 
 	this.resize = function(w){
 		this.width = w;
+	}
+
+	this.checkButton = function(label){
+		for (var i = 0; i < this.folders.length; i++){
+			for (var j = 0; j < this.folders[i].buttons.length; j++){
+				if (label == this.folders[i].buttons[j].label){
+					this.folders[i].buttons[j].check();
+					break;
+				}
+			}
+		}
+	}
+
+	this.uncheckButton = function(label){
+		for (var i = 0; i < this.folders.length; i++){
+			for (var j = 0; j < this.folders[i].buttons.length; j++){
+				if (label == this.folders[i].buttons[j].label){
+					this.folders[i].buttons[j].uncheck();
+					break;
+				}
+			}
+		}
 	}
 }

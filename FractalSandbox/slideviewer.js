@@ -72,14 +72,16 @@ function SlideViewer(title, x, y, width, height, images, button_title, listener)
 	}
 
 	this.onClick = function(){
-		if (this.window.onClick()){
-			this.close();
-			return true;
+		if (this.visible){
+			if (this.window.onClick()){
+				this.close();
+				return true;
+			}
+			else if (this.leftMouseOver())
+				this.prevImage();
+			else if (this.rightMouseOver())
+				this.nextImage();
 		}
-		else if (this.leftMouseOver())
-			this.prevImage();
-		else if (this.rightMouseOver())
-			this.nextImage();
 		return false;
 	}
 

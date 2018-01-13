@@ -40,6 +40,7 @@ function LoadDialogBox(title, x, y, width, height, fileHandler, dragOverListener
 				translate(this.pos.x, this.pos.y);
 				fill(0);
 				noStroke();
+				textFont("Arial");
 				textStyle(BOLD);
 				textSize(16);
 				textAlign(CENTER, CENTER);
@@ -67,9 +68,11 @@ function LoadDialogBox(title, x, y, width, height, fileHandler, dragOverListener
 	}
 
 	this.onClick = function(){
-		if (this.window.onClick()){
-			this.close();
-			return true;
+		if (this.visible){
+			if (this.window.onClick()){
+				this.close();
+				return true;
+			}
 		}
 		return false;
 	}

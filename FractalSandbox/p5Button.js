@@ -26,6 +26,7 @@ function p5Button(label, x, y, width, height, listener){
 				fill(this.text_fill);
 				noStroke();
 				textAlign(CENTER, CENTER);
+				textFont("Arial");
 				textStyle(BOLD);
 				if (this.mouseOver())
 					fill(this.text_highlight)
