@@ -1,4 +1,4 @@
-function Sandbox(x, y, w){
+function Grid(x, y, w){
 	this.pos = createVector(x, y);
 	this.w = w;
 

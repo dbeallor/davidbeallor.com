@@ -1,33 +1,36 @@
 function CursorControl(x, y){
 	this.pos = createVector(x, y);
-	this.fill = [180, 180, 180];
-	this.highlight = [125, 148, 223];
-	this.width = 20;
-	this.height = 45;
+	this.fill = color(220);
+	this.highlight = color(125, 148, 223);
+	this.width = 31;
+	this.drag_size = 10;
+	this.height = 3 * this.width + this.drag_size;
+	this.mode = 0;
 	this.bounds = [this.pos.x, this.pos.x + this.width, this.pos.y, this.pos.y + this.height];
-	this.drag_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y, this.pos.y + 5];
-	this.cursor_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + 5, this.pos.y + 25];
-	this.zoom_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + 25, this.pos.y + 45];
+	this.drag_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y, this.pos.y + this.drag_size];
+	this.cursor_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + this.drag_size, this.pos.y + this.width + this.drag_size];
+	this.zoom_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + this.width + this.drag_size, this.pos.y + 2 * this.width + this.drag_size];
+	this.rotate_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + 2 * this.width + this.drag_size, this.pos.y + 3 * this.width + this.drag_size];
 
 	this.show = function(){
 		push();
 			resetMatrix();
-			imageMode(CORNER);
+			imageMode(CENTER);
 			stroke(0);
 			fill(130);
-			rect(this.pos.x, this.pos.y, this.width, 5);
-			if (zoom_mode)
-				fill(this.fill);
-			else
-				fill(this.highlight);
-			rect(this.pos.x, this.pos.y + 5, this.width, 20);
-			image(cursor_image, this.pos.x + 2, this.pos.y + 6, 18, 18);
-			if (zoom_mode)
-				fill(this.highlight);
-			else
-				fill(this.fill);
-			rect(this.pos.x, this.pos.y + 25, this.width, 20);
-			image(zoom_image, this.pos.x + 3, this.pos.y + 27, 16, 16);
+			rect(this.pos.x, this.pos.y, this.width, 10);
+			
+			fill(this.mode == 0 ? this.highlight : this.fill);
+			rect(this.pos.x, this.pos.y + this.drag_size, this.width, this.width);
+			image(move_icon, this.pos.x + this.width / 2, this.pos.y + this.width - 5, 23, 22);
+
+			fill(this.mode == 1 ? this.highlight : this.fill);
+			rect(this.pos.x, this.pos.y + this.width + this.drag_size, this.width, this.width);
+			image(zoom_icon, this.pos.x + this.width / 2, this.pos.y + 2 * this.width - 5, 24, 24);
+
+			fill(this.mode == 2 ? this.highlight : this.fill);
+			rect(this.pos.x, this.pos.y + 2 * this.width + this.drag_size, this.width, this.width);
+			image(rotate_icon, this.pos.x + this.width / 2, this.pos.y + 3 * this.width - 5, 20, 20);
 		pop();
 	}
 
@@ -37,8 +40,14 @@ function CursorControl(x, y){
 	}
 
 	this.resetBounds = function(x, y){
-		this.drag_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y, this.pos.y + 5];
-		this.cursor_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + 5, this.pos.y + 25];
-		this.zoom_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + 25, this.pos.y + 45];
+		this.bounds = [this.pos.x, this.pos.x + this.width, this.pos.y, this.pos.y + this.height];
+		this.drag_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y, this.pos.y + 10];
+		this.cursor_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + 10, this.pos.y + this.width + 10];
+		this.zoom_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + this.width + 10, this.pos.y + 2 * this.width + 10];
+		this.rotate_bounds = [this.pos.x, this.pos.x + this.width, this.pos.y + 2 * this.width + 10, this.pos.y + 3 * this.width + 10];
+	}
+
+	this.setMode = function(m){
+		this.mode = m;
 	}
 }

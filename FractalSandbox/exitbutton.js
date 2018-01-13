@@ -5,11 +5,12 @@ function ExitButton(x, y){
 
 	this.show = function(){
 		push();
+			resetMatrix();
 			translate(this.pos.x, this.pos.y);
 			rectMode(CENTER);
 			noFill();
-			stroke(0);
-			rect(0, 0, this.r, this.r);
+			stroke(30);
+			strokeWeight(2);
 			line(-this.r / 2, -this.r / 2, this.r / 2, this.r / 2);
 			line(-this.r / 2, this.r / 2, this.r / 2, -this.r / 2);
 		pop();
@@ -23,5 +24,13 @@ function ExitButton(x, y){
 
 	this.resetBounds = function(){
 		this.bounds = [this.pos.x - this.r / 2, this.pos.x + this.r / 2, this.pos.y - this.r / 2, this.pos.y + this.r / 2];
+	}
+
+	this.withinBounds = function(x, y, bounds){
+		return (x >= bounds[0] && x <= bounds[1] && y >= bounds[2] && y <= bounds[3]);
+	}
+
+	this.clicked = function(){
+		return withinBounds(mouseX, mouseY, this.bounds);
 	}
 }
