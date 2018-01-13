@@ -193,6 +193,9 @@ function draw() {
 			translateCursorControl();
 	}
 
+	if(!noOpenWindows())
+		theaterMode();
+
 	showWindows();
 
 	menu_bar.show();
@@ -256,6 +259,15 @@ function showCursorIcon(){
 		}
 		imageMode(CENTER);
 		image(cursor_image, 0, 0, size, size);
+	pop();
+}
+
+function theaterMode(){
+	push();
+		resetMatrix();
+		fill(0, 150);
+		noStroke();
+		rect(screen_bounds[0], screen_bounds[2], screen_bounds[1] - screen_bounds[0], screen_bounds[3] - screen_bounds[2]);
 	pop();
 }
 
@@ -1203,6 +1215,7 @@ function handleFile(file){
 }
 
 function loadSeed(loaded_data){
+	print(loaded_data)
 	load_dialog.upload_button.remove();
 	load_dialog.drop_area.remove();
 
@@ -1216,12 +1229,13 @@ function loadSeed(loaded_data){
 		color_dialog.color_pickers[i].value(colors[i]);
 
 	var specs;
-	for (var i = 0; i < loaded_data.length - 2; i++){
+	for (var i = 0; i < loaded_data.length; i++){
+		if (loaded_data[i + 1] == "~")
+			break;
 		specs = split(loaded_data[i + 1], '%');
 		nodes[i] = new FractalNode(parseFloat(specs[0]), parseFloat(specs[1]));
-		if (i > 0){
+		if (i > 0)
 			edges[i-1] = new FractalEdge(nodes[i-1].pos, nodes[i].pos, 1, parseFloat(specs[2]), [200, 200, 200]);
-		}
 	}
 
 	getSeedData();
@@ -1288,6 +1302,7 @@ function saveSeed(){
 			save_data = append(save_data, str(nodes_copy[i].pos.x) + "%" + str(nodes_copy[i].pos.y));
 		else
 			save_data = append(save_data, str(nodes_copy[i].pos.x) + "%" + str(nodes_copy[i].pos.y) + "%" + str(edges_copy[i-1].type));
+	save_data = append(save_data, "~");
 	saveStrings(save_data, save_file_name);
 }
 

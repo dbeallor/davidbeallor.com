@@ -1,6 +1,6 @@
 function CursorControl(x, y){
 	this.pos = createVector(x, y);
-	this.fill = color(220);
+	this.fill = color(235);
 	this.highlight = color(97, 155, 249);
 	this.width = 31;
 	this.drag_size = 10;

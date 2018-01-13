@@ -4,8 +4,9 @@ function p5Button(label, x, y, width, height, listener){
 	this.width = width;
 	this.height = height;
 	this.fill = color(255);
-	this.highlight = color(100, 100, 220);
+	this.highlight = color(74,119,235);
 	this.text_fill = color(0);
+	this.text_highlight = color(255);
 	this.bounds = [this.pos.x - this.width / 2, this.pos.x + this.width / 2, this.pos.y - this.height / 2, this.pos.y + this.height / 2];
 	this.visible = false;
 	this.label = label;
@@ -25,6 +26,11 @@ function p5Button(label, x, y, width, height, listener){
 				fill(this.text_fill);
 				noStroke();
 				textAlign(CENTER, CENTER);
+				textStyle(BOLD);
+				if (this.mouseOver())
+					fill(this.text_highlight)
+				else
+					fill(this.text_fill);
 				text(this.label, 0, 0);
 			pop();
 		}
