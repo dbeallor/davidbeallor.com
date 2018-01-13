@@ -28,6 +28,8 @@ function MenuBar(){
 			for (var i = 0; i < this.folders.length; i++){
 				this.folders[i].show();
 			}
+			if (this.folderIsOpen() >= 0)
+				this.mouseOver();
 		pop();
 	}
 

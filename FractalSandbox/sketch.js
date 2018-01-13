@@ -67,7 +67,7 @@ var color_dialog;
 var gallery;
 var gallery_images = [];
 var new_fractal_warning_box;
-var samples = ["brushstrokes", "parallelogram", "spiral6"];
+var samples = ["brushstrokes", "parallelogram", "fingerprint", "honeycomb2", "honeycomb3", "jellyfish", "spiral6"];
 var ready;
 
 // =======================================================================================================
@@ -86,6 +86,7 @@ function preload(){
 }
 
 function setup() {
+	// pixelDensity(1);
 	canv = createCanvas(windowWidth, windowHeight);
 	angleMode(RADIANS);
 	show_gridlines = true;
@@ -142,7 +143,8 @@ function setup() {
 	ready = false;
 	level = 1;
 
-	fractal = createGraphics(2 * windowWidth, 2 * windowHeight);
+	var d = pixelDensity();
+	fractal = createGraphics(d * windowWidth, d * windowHeight);
 	max_out = false;	
 }
 
@@ -174,15 +176,9 @@ function draw() {
 	else if (!edges_drawn)
 		refresh();
 
-	imageMode(CORNER);
-	image(fractal, 0, 0, fractal.width / 2, fractal.height / 2);
+	drawFractal();
 
-	if (okayToDrag()){
-		if (cursor_control.mode == 0)
-			dragTranslateShape();
-		else
-			dragRotateShape();
-	}
+	checkDragEvents();
 
 	if (fractalize)
 		showLoadBar();
@@ -197,16 +193,9 @@ function draw() {
 			translateCursorControl();
 	}
 
-	gallery.show();
-	save_dialog.show();
-	screenshot_dialog.show();
-	load_dialog.show();
-	color_dialog.show();
-	new_fractal_warning_box.show();
+	showWindows();
 
 	menu_bar.show();
-	if (menu_bar.folderIsOpen() >= 0)
-		menu_bar.mouseOver();
 
 	if (!showCursor() && !capturing_screen)
 		showCursorIcon();
@@ -220,6 +209,30 @@ function draw() {
 
 function showCursor(){
 	return (withinBounds(mouseX, mouseY, cursor_control.bounds) || !onScreen() || creating_seed || creating_generator || !noOpenWindows() || mouseOnMenuBar());
+}
+
+function drawFractal(){
+	var d = pixelDensity();
+	imageMode(CORNER);
+	image(fractal, 0, 0, fractal.width / d, fractal.height / d);
+}
+
+function checkDragEvents(){
+	if (okayToDrag()){
+		if (cursor_control.mode == 0)
+			dragTranslateShape();
+		else
+			dragRotateShape();
+	}
+}
+
+function showWindows(){
+	gallery.show();
+	save_dialog.show();
+	screenshot_dialog.show();
+	load_dialog.show();
+	color_dialog.show();
+	new_fractal_warning_box.show();
 }
 
 function showCursorIcon(){
@@ -288,8 +301,18 @@ function mousePressed(){
 		if (!dragging_cursor_control && withinBounds(mouseX, mouseY, cursor_control.drag_bounds) && menu_bar.folderIsOpen() < 0)
 			dragging_cursor_control = true;
 
-		if (menu_bar.folderIsOpen() < 0){
-			if (save_dialog.onClick() || screenshot_dialog.onClick() || load_dialog.onClick() || color_dialog.onClick() || gallery.onClick() || new_fractal_warning_box.onClick())
+		if (menu_bar.folderIsOpen() < 0 && !noOpenWindows()){
+			if (save_dialog.visible && save_dialog.onClick())
+				ready = false;
+			if (screenshot_dialog.visible && screenshot_dialog.onClick())
+				ready = false;
+			if (load_dialog.visible && load_dialog.onClick())
+				ready = false;
+			if (color_dialog.visible && color_dialog.onClick())
+				ready = false;
+			if (gallery.visible && gallery.onClick())
+				ready = false;
+			if (new_fractal_warning_box.visible && new_fractal_warning_box.onClick())
 				ready = false;
 		}
 	}
@@ -363,6 +386,7 @@ function toggleNewFractalWarningBox(){
 
 function closeWarningBox(){
 	new_fractal_warning_box.close();
+	ready = false;
 }
 
 function clickout(){
@@ -422,7 +446,9 @@ function windowResized() {
 	screen_bounds = [0, windowWidth, menu_bar.height, windowHeight];
 	resizeCanvas(windowWidth, windowHeight);
 	menu_bar.resize(windowWidth);
+	var type = grid.type;
 	grid = new Grid(windowWidth / 2, windowHeight / 2 + menu_bar.height / 2, max(windowWidth, windowHeight));
+	grid.setType(type);
 	var dims = galleryDims();
 	gallery.resize(dims[0], dims[1]);
 	gallery.setPosition(grid.pos.x, grid.pos.y);
@@ -431,7 +457,8 @@ function windowResized() {
 	load_dialog.setPosition(grid.pos.x, grid.pos.y);
 	color_dialog.setPosition(grid.pos.x, grid.pos.y);
 	new_fractal_warning_box.setPosition(grid.pos.x, grid.pos.y);
-	fractal = createGraphics(2 * windowWidth, 2 * windowHeight);
+	var d = pixelDensity();
+	fractal = createGraphics(d * windowWidth, d * windowHeight);
 	edges_drawn = false;
 }
 
@@ -1267,9 +1294,9 @@ function saveSeed(){
 function saveScreenshot(){
 	redrawFractalOnly();
 	var image = screenPixels();
-	if (image.width > 2048)
-		image.resize(2048, 0);
-	image.save();
+	if (image.width > 1024)
+		image.resize(1024, 0);
+	image.save(save_file_name);
 }
 
 function screenPixels(){

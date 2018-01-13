@@ -17,6 +17,8 @@ function LoadDialogBox(title, x, y, width, height, fileHandler, dragOverListener
 		this.upload_button.style("z-index", "1");
 		this.upload_button.position(this.pos.x - 65, this.pos.y + 3);
 		this.upload_button.hide();
+		this.upload_button.size(170, 20);
+
 		this.drop_area = createP('');
 		this.drop_area.position(0, 5);
 		this.drop_area.size(screen_bounds[1] - screen_bounds[0], screen_bounds[3] - screen_bounds[2]);

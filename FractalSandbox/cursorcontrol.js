@@ -1,7 +1,7 @@
 function CursorControl(x, y){
 	this.pos = createVector(x, y);
 	this.fill = color(220);
-	this.highlight = color(125, 148, 223);
+	this.highlight = color(97, 155, 249);
 	this.width = 31;
 	this.drag_size = 10;
 	this.height = 3 * this.width + this.drag_size;
@@ -18,18 +18,18 @@ function CursorControl(x, y){
 			imageMode(CENTER);
 			stroke(0);
 			fill(130);
-			rect(this.pos.x, this.pos.y, this.width, 10);
+			rect(this.pos.x, this.pos.y, this.width, 10, 3, 3, 0, 0);
 			
 			fill(this.mode == 0 ? this.highlight : this.fill);
 			rect(this.pos.x, this.pos.y + this.drag_size, this.width, this.width);
-			image(move_icon, this.pos.x + this.width / 2, this.pos.y + this.width - 5, 23, 22);
+			image(move_icon, this.pos.x + this.width / 2, this.pos.y + this.width - 5, 21, 20);
 
 			fill(this.mode == 1 ? this.highlight : this.fill);
 			rect(this.pos.x, this.pos.y + this.width + this.drag_size, this.width, this.width);
-			image(zoom_icon, this.pos.x + this.width / 2, this.pos.y + 2 * this.width - 5, 24, 24);
+			image(zoom_icon, this.pos.x + this.width / 2, this.pos.y + 2 * this.width - 5, 23, 23);
 
 			fill(this.mode == 2 ? this.highlight : this.fill);
-			rect(this.pos.x, this.pos.y + 2 * this.width + this.drag_size, this.width, this.width);
+			rect(this.pos.x, this.pos.y + 2 * this.width + this.drag_size, this.width, this.width, 0, 0, 3, 3);
 			image(rotate_icon, this.pos.x + this.width / 2, this.pos.y + 3 * this.width - 5, 20, 20);
 		pop();
 	}

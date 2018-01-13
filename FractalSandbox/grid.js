@@ -3,7 +3,7 @@ function Grid(x, y, w){
 	this.w = w;
 
 	// Square Gridline Attributes
-	this.num_gridlines = 99;
+	this.num_gridlines = this.w > 1000 ? 149 : 99;
 	this.offset = ((this.num_gridlines + 1) / 2) - 1;
 	this.gap = this.w / (this.num_gridlines + 1);
 	this.type = 0;
@@ -25,7 +25,7 @@ function Grid(x, y, w){
 	this.v_gap = this.w / (this.num_h_lines + 1);
 	this.h_gap = 2 * this.v_gap * tan(PI / 6);
 	this.r = this.w / 2;
-	this.h_dist = ((this.num_h_lines + 1)*this.gap)*tan(PI / 6);
+	this.h_dist = ((this.num_h_lines + 1)*(this.w / (this.num_h_lines + 1)))*tan(PI / 6);
 	this.h_offset = ((this.num_h_lines + 1) / 2);
 	this.v_offset = ((this.num_h_lines + 1) / 2);
 	this.triangle_coords = []
