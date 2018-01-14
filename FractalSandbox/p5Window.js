@@ -11,6 +11,7 @@ function p5Window(title, x, y, width, height){
 	this.visible = false;
 	this.buttons = [];
 	this.text = "";
+	this.image = image || createImage(this.width, this.height);
 
 	this.show = function(){
 		if (this.visible){
@@ -93,5 +94,9 @@ function p5Window(title, x, y, width, height){
 
 	this.setPosition = function(x, y){
 		this.pos.set(x, y);
+	}
+
+	this.addImage = function(){
+		this.image = image;
 	}
 }

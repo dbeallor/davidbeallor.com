@@ -6,15 +6,15 @@ function FractalEdge(start, end, w, t, s){
 	this.stroke = s;
 
 	this.show = function(){
-		fractal.push();
-			if (fractalize){
-				var x = map(next_edge_count - (edges.length - current_edge + 1), 0, next_edge_count - 1, 0, 1);
+		fractal.graphics.push();
+			if (fractal.fractalizing){
+				var x = map(fractal.next_edge_count - (fractal.edges.length - fractal.current_edge + 1), 0, fractal.next_edge_count - 1, 0, 1);
 				this.setStroke(colorMap(x));
 			}
-			fractal.stroke(this.stroke);
-			fractal.strokeWeight(this.weight);
-			fractal.line(this.start.x, this.start.y, this.end.x, this.end.y);
-		fractal.pop();
+			fractal.graphics.stroke(this.stroke);
+			fractal.graphics.strokeWeight(this.weight);
+			fractal.graphics.line(this.start.x, this.start.y, this.end.x, this.end.y);
+		fractal.graphics.pop();
 	}
 
 	this.setStart = function(x, y){

@@ -164,4 +164,21 @@ function Grid(x, y, w){
 			line(-this.w / 2, 0, this.w / 2, 0);
 		pop();
 	}
+
+	// Returns the closest grid coordinate to the point (x,y)
+	this.closestGridPoint = function(x, y){
+		closest_dist = 10000;
+		closest_pos = [-1, -1];
+		var d;
+		for (var i = 0; i < this.coords.length; i++){
+			for (var j = 0; j < this.coords.length; j++){
+				d = dist(this.coords[i][j][0], this.coords[i][j][1], x, y);
+				if (d < closest_dist){
+					closest_dist = d;
+					closest_pos = this.coords[i][j];
+				}
+			}
+		}
+		return closest_pos;
+	}
 }
