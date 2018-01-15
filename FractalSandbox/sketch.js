@@ -5,28 +5,19 @@
 var canv;
 var canvas_dims = [720, 520];
 var screen_bounds;
-
-// Grid
 var grid;
-var show_gridlines;
+
+var intro_image;
 
 // Zoom and drag
 var drag_mode;
 var zoom_mode;
 
 // Windows
-var menu_bar;
-var load_bar;
-var save_dialog;
-var screenshot_dialog;
-var save_file_name;
-var load_dialog;
-var color_dialog;
-var gallery;
+var windows;
 var gallery_images = [];
-var new_fractal_warning_box;
-var samples = ["brushstrokes", "snowflake", "parallelogram", "sierpinski", "spiral2", "fingerprint", "pinwheel", "rhombi5", "rhombi8", 
-				"honeycomb2", "spiral8", "shield", "honeycomb3", "pinwheel3", "jellyfish", "snake",  "spiral16", "rhombi2",  "spiral7", "waves", 
+var samples = ["sierpinski", "rhombi5", "snowflake", "brushstrokes", "fingerprint", "parallelogram", "spiral2",  "pinwheel",  "rhombi8", 
+				"honeycomb2", "spiral8", "shield", "spiral17", "honeycomb3", "pinwheel3", "jellyfish", "snake",  "spiral16", "rhombi2",  "spiral7", "waves", 
 				"parallelogram2", "spiral6"];
 
 var fractal;
@@ -38,82 +29,114 @@ var ready;
 function preload(){
 	for (var i = 0; i < samples.length; i++)
 		gallery_images[i] = loadImage("snapshots/" + samples[i] + ".png");
+
+	intro_image = loadImage("intro.png");
 }
 
 function setup() {
-	// pixelDensity(1);
 	canv = createCanvas(windowWidth, windowHeight);
-	angleMode(RADIANS);
-	show_gridlines = true;
+	if (!detectMobile()){
+		angleMode(RADIANS);
+		// pixelDensity(1);
 
-	initializeMenuBar();
-	screen_bounds = [0, width, menu_bar.height, height];
-	grid = new Grid(width / 2, height / 2 + menu_bar.height / 2, windowWidth);
+		initializeMenuBar();
 
-	zoom_mode = 0;
-	drag_mode = 0;
+		screen_bounds = [0, width, menu_bar.height, height];
 
-	load_bar = new LoadBar(screen_bounds[1] - 100, screen_bounds[3] - 15, 80, 10);
+		grid = new Grid(width / 2, height / 2 + menu_bar.height / 2, windowWidth);
 
-	save_file_name = '';
+		zoom_mode = 0;
+		drag_mode = 0;
 
-	save_dialog = new SaveDialogBox("Download as .txt file...", grid.pos.x, grid.pos.y, 250, 80, ".txt", saveSeed, updateSaveFileName);
+		load_bar = new LoadBar(screen_bounds[1] - 100, screen_bounds[3] - 15, 80, 10);
+
+		save_file_name = '';
+
+		initializeWindows();
+
+		ready = false;
+
+		fractal = new Fractal();
+	}	
+}
+
+function initializeWindows(){
+	windows = [];
+
+	var save_dialog = new SaveDialogBox("Download as .txt file...", grid.pos.x, grid.pos.y, 250, 80, ".txt", saveSeed, updateSaveFileName);
 	save_dialog.initialize();
+	windows = append(windows, save_dialog);
 
-	screenshot_dialog = new SaveDialogBox("Capture Screenshot...", grid.pos.x, grid.pos.y, 250, 80, ".png", saveScreenshot, updateSaveFileName);
+	var screenshot_dialog = new SaveDialogBox("Capture Screenshot...", grid.pos.x, grid.pos.y, 250, 80, ".png", saveScreenshot, updateSaveFileName);
 	screenshot_dialog.initialize();
+	windows = append(windows, screenshot_dialog);
 
-	load_dialog = new LoadDialogBox("Open File...", grid.pos.x, grid.pos.y, 250, 120, handleFile, highlightDropArea, unhighlightDropArea);
+	var load_dialog = new LoadDialogBox("Open File...", grid.pos.x, grid.pos.y, 250, 120, handleFile, highlightDropArea, unhighlightDropArea);
 	load_dialog.initialize();
+	windows = append(windows, load_dialog);
 
-	color_dialog = new ColorDialogBox("Customize Color Scheme", grid.pos.x, grid.pos.y, 250, 110);
+	var color_dialog = new ColorDialogBox("Customize Color Scheme", grid.pos.x, grid.pos.y, 250, 110);
 	color_dialog.initialize();
+	windows = append(windows, color_dialog);
 
 	var message = "Are you sure you want to start over?\nAll unsaved data will be lost.";
-	new_fractal_warning_box = new WarningBox(grid.pos.x, grid.pos.y, 220, 120, message, newFractal, closeWarningBox);
+	var new_fractal_warning_box = new WarningBox(grid.pos.x, grid.pos.y, 220, 120, message, newFractal, closeWindows);
+	windows = append(windows, new_fractal_warning_box);
 
-	initializeSampleGallery();
+	var dims = galleryDims();
+	var gallery = new SlideViewer("Sample Gallery", grid.pos.x, grid.pos.y, dims[0], dims[1], gallery_images, "Open", loadSample);
+	// gallery.open();
+	windows = append(windows, gallery);
 
-	ready = false;
+	var intro = new Intro();
+	intro.initialize();
+	intro.open();
+	windows = append(windows, intro);
+}
 
-	max_out = false;
-	fractal = new Fractal();	
+function galleryDims(){
+	var h = 0.9 * windowHeight;
+	var ratio = 1.4;
+	var w = constrain(h * ratio, 0, 0.9 * windowWidth);
+	return [w, h];
+}
+
+function startTutorial(){
+	null;
 }
 
 // =======================================================================================================
 // ==DRAW
 // =======================================================================================================
 function draw() {
-	styleCursor();
-	background(color(color_dialog.color_pickers[0].value()));
+	if (!detectMobile()){
+		styleCursor();
+		background(color(windows[3].color_pickers[0].value()));
 
-	if (fractal.creating_seed){
-		if (show_gridlines)
+		if (fractal.creating_seed)
 			grid.show();
+
+		fractal.show();
+
+		if (fractal.fractalizing)
+			load_bar.show();
+
+		dragTranslateShape();
+		dragRotateShape();
+
+		if(!noOpenWindows())
+			showWindows();
+
+		menu_bar.show();
+		
+		if (!mouseIsPressed && !keyIsPressed && !fractal.fractalizing)
+			ready = true;
+
+		// fill(255);
+		// text(mouseX + ", " + mouseY, 50, 50);
 	}
-
-	fractal.show();
-
-	if (fractal.fractalizing)
-		showLoadBar();
-
-	dragTranslateShape();
-	dragRotateShape();
-
-	if(!noOpenWindows())
-		theaterMode();
-
-	showWindows();
-
-	menu_bar.show();
-	
-	if (!mouseIsPressed && !keyIsPressed && !fractal.fractalizing)
-		ready = true;
-
-	// fill(255);
-	// text(mouseX + ", " + mouseY, 50, 50);
-	// text(okayToDrag(), 50, 50);
-	// text(onScreen(), 50, 50);
+	else
+		showMobileMessage();
 }
 
 function styleCursor(){
@@ -125,22 +148,28 @@ function styleCursor(){
 		canvas.style.cursor = 'default';
 }
 
-function showWindows(){
-	gallery.show();
-	save_dialog.show();
-	screenshot_dialog.show();
-	load_dialog.show();
-	color_dialog.show();
-	new_fractal_warning_box.show();
-}
+// =======================================================================================================
+// ==WINDOW RESIZING
+// =======================================================================================================
+function windowResized() {
+	screen_bounds = [0, windowWidth, menu_bar.height, windowHeight];
 
-function theaterMode(){
-	push();
-		resetMatrix();
-		fill(0, 150);
-		noStroke();
-		rect(screen_bounds[0], screen_bounds[2], screen_bounds[1] - screen_bounds[0], screen_bounds[3] - screen_bounds[2]);
-	pop();
+	resizeCanvas(windowWidth, windowHeight);
+
+	menu_bar.resize(windowWidth);
+
+	var type = grid.type;
+	grid = new Grid(windowWidth / 2, windowHeight / 2 + menu_bar.height / 2, max(windowWidth, windowHeight));
+	grid.setType(type);
+
+	var dims = galleryDims();
+	windows[5].resize(dims[0], dims[1]);
+	windows[6].resize();
+	for (var i = 0; i < windows.length; i++)
+		windows[i].setPosition(grid.pos.x, grid.pos.y);
+
+	var d = pixelDensity();
+	fractal.resize(d * windowWidth, d * windowHeight);
 }
 
 // =======================================================================================================
@@ -152,23 +181,18 @@ function mousePressed(){
 			// Store click location globally for drag functionality
 			prev_click = [mouseX, mouseY];
 
-		if (clickout()){
-			closeOpenWindows();
-			ready = false;
-		}
+		if (clickout())
+			closeWindows();
+
+		// Window click events (returns true if a window was closed)
+		if (menu_bar.folderIsOpen() < 0 && !noOpenWindows())
+			windowMousePressEvents()
 
 		fractal.onClick();
 
 		// Menu bar mouse events
-		if (!fractal.fractalizing && ready){
-			if (menu_bar.onClick())
-				ready = false;
-		}
-
-		if (menu_bar.folderIsOpen() < 0 && !noOpenWindows()){
-			if (save_dialog.onClick() || screenshot_dialog.onClick() || load_dialog.onClick() || color_dialog.onClick() || gallery.onClick() || new_fractal_warning_box.onClick())
-				ready = false;
-		}
+		if (!fractal.fractalizing && ready && menu_bar.onClick())
+			ready = false;
 	}
 }
 
@@ -177,39 +201,7 @@ function keyPressed(){
 		menu_bar.checkShortcuts();
 		ready = false;
 	}
-
-	gallery.onKeyPress();
-	save_dialog.onKeyPress();
-	screenshot_dialog.onKeyPress();
-	load_dialog.onKeyPress();
-	color_dialog.onKeyPress();
-	menu_bar.onKeyPress();
-	new_fractal_warning_box.onKeyPress();
-}
-
-function shortcutPressed(token){
-	var code = tokenToKeyCode(token);
-	if (specialCharacter(token))
-		return (keyCode == code)
-	else
-		return (key == code)
-}
-
-function tokenToKeyCode(token){
-	switch(token){
-		case "space" : return 32; break;
-		case "enter" : return ENTER; break;
-		case "+" : return 187; break;
-		case "-" : return 189; break;
-		case "?" : return 191; break;	
-		case ";" : return 186; break;		
-		default : return token;
-	}
-}
-
-function specialCharacter(token){
-	var chars = ["space", "enter", "+", "-", "?", ";"];
-	return (chars.indexOf(token) > -1);
+	windowKeypressEvents();
 }
 
 function mouseWheel(event){
@@ -220,97 +212,178 @@ function mouseWheel(event){
 	return false;
 }
 
-function withinBounds(x, y, bounds){
-	return (x >= bounds[0] && x <= bounds[1] && y >= bounds[2] && y <= bounds[3]);
-	// 			left             right           bottom             top
-}
-
-function openGallery(){
-	if (noOpenWindows())
-		gallery.open();
-}
-
-function openNewFractalWarningBox(){
-	if (noOpenWindows())
-		new_fractal_warning_box.open();
-}
-
-function closeWarningBox(){
-	new_fractal_warning_box.close();
-	ready = false;
+function onScreen(){
+	return withinBounds(mouseX, mouseY, screen_bounds);
 }
 
 function clickout(){
 	return (!noOpenWindows() && onScreen() && !withinBounds(mouseX, mouseY, currentOpenWindowBounds()) && menu_bar.folderIsOpen() < 0);
 }
 
-function onScreen(){
-	return withinBounds(mouseX, mouseY, screen_bounds);
+// =======================================================================================================
+// ==Menu Bar
+// =======================================================================================================
+function initializeMenuBar(){
+	menu_bar = new MenuBar();
+
+	menu_bar.addFolder("FractalSandbox");
+	menu_bar.addButton("About FractalSandbox", "", null);
+	menu_bar.addButton("Sample Gallery", "W", openGallery);
+
+	menu_bar.addFolder("File");
+	menu_bar.addButton("New Fractal", "N", openNewFractalWarningBox);
+	menu_bar.addButton("Open File...", "O", openLoadDialog);
+	menu_bar.addButton("Download as txt file...", "S", openSaveDialog);
+	menu_bar.addButton("Capture Screenshot...", "D", openScreenshotDialog);
+
+	menu_bar.addFolder("Edit");
+	menu_bar.addButton("Undo", "Z", undo);
+	menu_bar.addButton("Hide Edge", "H", hideEdge);
+	menu_bar.addButton("Skip Edge", "J", skipEdge);
+	
+	menu_bar.addFolder("View");
+	menu_bar.addButton("Zoom In", "+", shortcutZoomIn);
+	menu_bar.addButton("Zoom Out", "-", shortcutZoomOut);
+	menu_bar.addButton("Toggle Gridlines", "G", toggleGridlines);
+	menu_bar.addButton("Center", "space", centerShape);
+	menu_bar.addButton("Rotate Left 90°", "L", rotateLeft90);
+	menu_bar.addButton("Rotate Right 90°", ";", rotateRight90);
+	menu_bar.addButton("View Seed", "V", viewSeed);
+	menu_bar.checkButton("View Seed");
+
+	menu_bar.addFolder("Fractalization");
+	menu_bar.addButton("Lock Seed", "enter", lockSeed);
+	menu_bar.addButton("Level Up", "enter", levelUp);
+	menu_bar.addButton("Max Level Up", "M", maxOut);
+	menu_bar.addButton("Timed Level Up", ", ", null);
+	menu_bar.addButton("Customize Color Scheme", "C", openColorDialog);
+
+	menu_bar.addFolder("Tools");
+	menu_bar.addButton("Zoom Mode Mouse Centered", "1", zoomModeMouse);
+	menu_bar.checkButton("Zoom Mode Mouse Centered");
+	menu_bar.addButton("Zoom Mode Fractal Centered", "2", zoomModeFractal);
+	menu_bar.addButton("Drag Mode Translate", "3", dragModeTranslate);
+	menu_bar.checkButton("Drag Mode Translate");
+	menu_bar.addButton("Drag Mode Rotate", "4", dragModeRotate);
+
+	menu_bar.addFolder("Help");
+	menu_bar.addButton("Tutorial", "T", null);
+	menu_bar.addButton("Learn More", "", null);
+
+	menu_bar.initialize();
+
+	menu_bar.enableButtons(["About FractalSandbox", "Sample Gallery", "New Fractal", "Open File...", "Undo", "Toggle Gridlines", "Lock Seed"]);	
+}
+
+function refreshMenuBarButtons(){
+	if (fractal.creating_seed)
+		menu_bar.enableButtons(["About FractalSandbox", "Sample Gallery", "New Fractal", "Open File...", "Undo", "Toggle Gridlines", "Lock Seed"]);
+	else if (fractal.creating_generator)
+		menu_bar.enableButtons(["About FractalSandbox", "Sample Gallery", "New Fractal", "Open File...", "Skip Edge", "Hide Edge", "Undo"]);
+	else if (fractal.viewing_seed)
+		menu_bar.enableButtons(["About FractalSandbox", "Sample Gallery", "New Fractal", "Open File...", "View Seed"]);
+	else
+		menu_bar.enableButtons(["About FractalSandbox", "New Fractal", "Open File...", "Sample Gallery", "Level Up", "Max Level Up", "Timed Level Up", "Download as txt file...", 
+									"Capture Screenshot...", "Redraw Seed", "Customize Color Scheme",   "Zoom In", "Zoom Out", "Center", "Rotate Left 90°", "Rotate Right 90°", "View Seed", 
+									"Drag Mode Rotate", "Drag Mode Translate", "Zoom Mode Mouse Centered", "Zoom Mode Fractal Centered",]);
+}
+
+function mouseOnMenuBar(){
+	var open_folder = menu_bar.folderIsOpen();
+	if (open_folder >= 0){
+		var folder = menu_bar.folders[open_folder];
+		for (var i = 0; i < folder.buttons.length; i++){
+			if (folder.buttons[i].mouseOver())
+				return true;
+		}
+	}
+	return false;
 }
 
 function undo(){
-	if (fractal.creating_seed && fractal.nodes.length > 1)
-		undoPlacedNode();
+	if (fractal.creating_seed)
+		fractal.undoSeed();
 
-	if (fractal.creating_generator && fractal.current_index < fractal.edges.length)
-		undoGeneratorChoice();
+	if (fractal.creating_generator)
+		fractal.undoGenerator();
 }
 
 function newFractal(){
 	setup();
-	gallery.close();
+	closeWindows();
+}
+
+function viewSeed(){
+	fractal.viewing_seed ? fractal.viewFractal() : fractal.viewSeed();
+	fractal.viewing_seed ? menu_bar.checkButton("View Seed") : menu_bar.uncheckButton("View Seed");
+	refreshMenuBarButtons();
+	ready = false;
 }
 
 // =======================================================================================================
 // ==WINDOWS
 // =======================================================================================================
 function noOpenWindows(){
-	return (!save_dialog.visible && !screenshot_dialog.visible && !load_dialog.visible && !color_dialog.visible && !gallery.visible && !new_fractal_warning_box.visible);
+	for (var i = 0; i < windows.length; i++)
+		if (windows[i].visible)
+			return false;
+	return true;
 }
 
 function currentOpenWindowBounds(){
-	if (save_dialog.visible)
-		return save_dialog.bounds;
-	if (screenshot_dialog.visible)
-		return screenshot_dialog.bounds;
-	if (load_dialog.visible)
-		return load_dialog.bounds;
-	if (gallery.visible)
-		return gallery.bounds;
-	if (color_dialog.visible)
-		return color_dialog.bounds;
-	if (new_fractal_warning_box.visible)
-		return new_fractal_warning_box.bounds;
+	for (var i = 0; i < windows.length; i++)
+		if (windows[i].visible)
+			return windows[i].bounds;
 }
 
-function closeOpenWindows(){
-	save_dialog.close();
-	screenshot_dialog.close();
-	load_dialog.close();
-	color_dialog.close();
-	gallery.close();
-	new_fractal_warning_box.close();
+function showWindows(){
+	theaterMode();
+	for (var i = 0; i < windows.length; i++)
+		windows[i].show();
+}
+
+function theaterMode(){
+	push();
+		resetMatrix();
+		fill(0, 150);
+		noStroke();
+		rect(screen_bounds[0], screen_bounds[2], screen_bounds[1] - screen_bounds[0], screen_bounds[3] - screen_bounds[2]);
+	pop();
+}
+
+function closeWindows(){
+	for (var i = 0; i < windows.length; i++)
+		windows[i].close();
 	ready = false;
 }
 
-function windowResized() {
-	print(menu_bar);
-	screen_bounds = [0, windowWidth, menu_bar.height, windowHeight];
-	resizeCanvas(windowWidth, windowHeight);
-	menu_bar.resize(windowWidth);
-	var type = grid.type;
-	grid = new Grid(windowWidth / 2, windowHeight / 2 + menu_bar.height / 2, max(windowWidth, windowHeight));
-	grid.setType(type);
-	var dims = galleryDims();
-	gallery.resize(dims[0], dims[1]);
-	gallery.setPosition(grid.pos.x, grid.pos.y);
-	save_dialog.setPosition(grid.pos.x, grid.pos.y);
-	screenshot_dialog.setPosition(grid.pos.x, grid.pos.y);
-	load_dialog.setPosition(grid.pos.x, grid.pos.y);
-	color_dialog.setPosition(grid.pos.x, grid.pos.y);
-	new_fractal_warning_box.setPosition(grid.pos.x, grid.pos.y);
-	var d = pixelDensity();
-	fractal.resize(d * windowWidth, d * windowHeight);
+function windowMousePressEvents(){
+	for (var i = 0; i < windows.length; i++){
+		// Check window click events, returns true if window was closed
+		if (windows[i].onClick()){
+			// If the color dialog box was closed, rescale the colours and refresh
+			if (i == 3){
+				fractal.scaleColors();
+				fractal.refresh();
+			}
+			ready = false;
+		}
+	}
+}
+
+function windowKeypressEvents(){
+	for (var i = 0; i < windows.length; i++)
+		windows[i].onKeyPress();
+}
+
+function openNewFractalWarningBox(){
+	if (noOpenWindows())
+		windows[4].open();
+}
+
+function openGallery(){
+	closeWindows();
+	windows[5].open();
 }
 
 // =======================================================================================================
@@ -326,6 +399,7 @@ function dragTranslateShape(){
 		deltaY = mouseY - prev_click[1];
 
 		prev_click = [mouseX, mouseY];
+
 		fractal.translate(deltaX, deltaY);
 	}
 }
@@ -346,10 +420,13 @@ function centerShape(){
 function dragRotateShape(){
 	if (okayToDrag() && drag_mode == 1){
 		fractal.refreshRotationCenter();
+
 		var prev_angle = polarAngle(prev_click[0] - fractal.rotation_center.x, prev_click[1] - fractal.rotation_center.y);
 		var current_angle = polarAngle(mouseX - fractal.rotation_center.x, mouseY - fractal.rotation_center.y);
 		var delta = current_angle - prev_angle;
+
 		prev_click = [mouseX, mouseY];
+
 		fractal.rotate(delta);
 	}
 }
@@ -396,24 +473,9 @@ function shortcutZoomOut(){
 // =======================================================================================================
 // ==SEED CREATION
 // =======================================================================================================
-function undoPlacedNode(){
-	fractal.nodes.splice(fractal.nodes.length-1, 1);
-	fractal.edges.splice(fractal.nodes.length-1, 1);
-}
-
 function toggleGridlines(){
 	grid.setType((grid.type + 1) % 3);
-	grid.type == 2 ? show_gridlines = false : show_gridlines = true;
 }
-
-// function redrawSeed(){
-// 	nodes = nodeCopy(nodes_copy);
-// 	edges = edgeCopy(edges_copy);
-// 	updateSeed();
-// 	creating_seed = true;
-// 	grid.setType(2);
-// 	menu_bar.enableButtons(["About FractalSandbox", "New Fractal", "Open File...", "Undo", "Toggle Gridlines", "Lock Seed", "Sample Gallery"]);
-// }
 
 function lockSeed(){
 	if (fractal.nodes.length < 3)
@@ -422,33 +484,13 @@ function lockSeed(){
 		alert("Your seed must start and end at different positions.")
 	else{
 		fractal.setupForGeneratorCreation();
-		menu_bar.enableButtons(["About FractalSandbox", "Skip Edge", "Hide Edge", "Undo", "Open File...", "New Fractal", "Sample Gallery"]);
+		refreshMenuBarButtons();
 	}
 }
 
 // =======================================================================================================
 // ==GENERATOR CREATION
 // =======================================================================================================
-function undoGeneratorChoice(){
-	fractal.edges[idx].setType(0);
-	fractal.seed.edges[idx].setType(0);
-	fractal.seed.types[idx] = 0;
-	fractal.seed.types_r[fractal.seed.types_r.length - idx - 1] = 0;
-	var stop = fractal.current_index + 1;
-	fractal.edges = edgeCopy(fractal.seed.edges);
-	fractal.nodes = nodeCopy(fractal.seed.nodes);
-	fractal.current_index = fractal.nodes.length - 1;
-	for (var i = fractal.edges.length - 1; i >= stop; i--){
-		if (fractal.edges[i].type == 4)
-			fractal.updateGenerator(true, false);
-		else if (edges[i].type == 5)
-			fractal.updateGenerator(false, true);
-		else
-			fractal.updateGenerator(false, false);
-	}
-	fractal.refresh();
-}
-
 function skipEdge(){
 	fractal.updateGenerator(true, false);
 }
@@ -466,124 +508,12 @@ function levelUp(){
 	fractal.getReadyToFractalize();
 }
 
-function showLoadBar(){
-	if (fractal.next_edge_count > 100){
-		load_bar.setPercentage((fractal.edges.length - fractal.prev_edge_count) / (fractal.next_edge_count - fractal.prev_edge_count));
-		load_bar.show();
-	}
-}
-
-// =======================================================================================================
-// ==AUXILLARY MATH FUNCTIONS
-// =======================================================================================================
-function angleBetween(v1, v2){
-	return polarAngle(v2.x, v2.y) - polarAngle(v1.x, v1.y);
-}
-
-function dot(v1, v2){
-	return v1.x*v2.x + v1.y*v2.y;
-}
-
-// Return the slope of the line  (x1, y1) --> (x2, y2)
-function slope(x1, y1, x2, y2){
-	if (x2 - x1 == 0) 
-		return 1000000;
-	else
-		return (y2 - y1) / (x2 - x1);
-}
-
-// Determine the y intercept of the line y = mx + b given m, x and y
-function intercept(m, x, y){
-	return y - m*x;
-}
-
-// Return the midpoint of the line (x1, y1) --> (x2, y2)
-function midpoint(x1, y1, x2, y2){
-	return [(x1 + x2) / 2, (y1 + y2) / 2];
-}
-
-function polarAngle(x, y){
-	if (x > 0 && y > 0)
-		return Math.atan(abs(y) / abs(x));
-	else if (x < 0 && y > 0)
-		return Math.PI - Math.atan(abs(y) / abs(x));
-	else if (x > 0 && y < 0)
-		return 2*Math.PI - Math.atan(abs(y) / abs(x));
-	else if (x < 0 && y < 0)
-		return Math.PI + Math.atan(abs(y) / abs(x));
-	else if (x == 0 && y > 0)
-		return Math.PI / 2;
-	else if (x == 0 && y < 0)
-		return 3*Math.PI / 2;
-	else if (x < 0 && y == 0)
-		return Math.PI;
-	else
-		return 0;
-}
-
-// Determine if the point (x, y) is "above" the line (x1, y1) --> (x2, y2)
-function aboveLine(x, y, x1, y1, x2, y2){
-	if (x2 >= x1){
-		var m = slope(x1, y1, x2, y2);
-		if (m == 1000000) // check for vertical line
-			if (y2 > y1)
-				return x > x1;
-			else
-				return x < x1;
-		var b = intercept(m, x1, y1);
-		return y < m * x + b;
-	}
-	else {
-		var m = slope(x2, y2, x1, y1);
-		if (m == 1000000)
-			if (y2 > y1)
-				return x > x1;
-			else
-				return x < x1;
-		var b = intercept(m, x1, y1);
-		return y > m * x + b;
-	}	
-}
-
-// Determine if the point (x, y) is "to the left" of the line perpendicular to the line (x1, y1) --> (x2, y2)
-// and passing through it's midpoint
-function toTheLeft(x, y, x1, y1, x2, y2){
-	var vec = createVector(x2 - x1, y2 - y1);
-	var perp_vec = createVector(1, -vec.x/vec.y);
-	var mid = midpoint(x1, y1, x2, y2);
-	if (vec.y == 0){
-		if (x2 > x1)
-			return x < mid[0]
-		else
-			return x > mid[0]
-	}
-	var end = [mid[0] + perp_vec.x, mid[1] + perp_vec.y];
-
-	if (end[1] < mid[1])
-		return aboveLine(x, y, mid[0], mid[1], end[0], end[1]);
-	else
-		return aboveLine(x, y, end[0], end[1], mid[0], mid[1]);
-}
-
-function scalePoint(x, y, delta, center){
-	x = x - center[0];
-	y = y - center[1];
-
-	var r = pow(pow(x, 2) +  pow(y, 2), 0.5);
-	var theta = polarAngle(x, y);
-
-	var new_x = delta * r * cos(theta) + center[0];
-	var new_y = delta * r * sin(theta) + center[1];
-
-	return [new_x, new_y];
-}
-
 // =======================================================================================================
 // ==LOADING
 // =======================================================================================================
 function openLoadDialog(){
-	if (noOpenWindows())
-		load_dialog.open();
+	closeWindows();
+	windows[2].open();
 }
 
 function handleFile(file){
@@ -591,8 +521,8 @@ function handleFile(file){
 }
 
 function loadSeed(loaded_data){
-	load_dialog.upload_button.remove();
-	load_dialog.drop_area.remove();
+	windows[2].upload_button.remove();
+	windows[2].drop_area.remove();
 
 	setup();
 	fractal.creating_seed = false;
@@ -600,8 +530,8 @@ function loadSeed(loaded_data){
 	fractal.nodes = [];
 
 	var colors = split(loaded_data[0], '%');
-	for (var i = 0; i < color_dialog.color_pickers.length; i++)
-		color_dialog.color_pickers[i].value(colors[i]);
+	for (var i = 0; i < windows[3].color_pickers.length; i++)
+		windows[3].color_pickers[i].value(colors[i]);
 
 	var specs;
 	for (var i = 0; i < loaded_data.length; i++){
@@ -624,62 +554,50 @@ function loadSeed(loaded_data){
 	fractal.refresh();
 	fractal.center();
 	fractal.scaleColors();
-	menu_bar.enableButtons(["About FractalSandbox", "Level Up", "Max Level Up", "Timed Level Up", "Download as .txt file...", "Capture Screenshot...", "Open File...", 
-							"Redraw Seed", "Customize Color Scheme", "New Fractal", "Sample Gallery", "Zoom In", "Zoom Out", "Zoom Mode Mouse Centered", 
-							"Zoom Mode Fractal Centered", "Center", "Rotate Left 90°", "Rotate Right 90°", "Drag Mode Rotate", "Drag Mode Translate"]);
-	gallery.close();
+	refreshMenuBarButtons();
+	closeWindows();
 }
 
 function highlightDropArea(){
-	load_dialog.upload_button.style("z-index", "0");
-	save_dialog.save_button.style("z-index", "0");
-	screenshot_dialog.save_button.style("z-index", "0");
-	load_dialog.drop_area.style("background-color", "rgba(186, 234, 236, 0.5)");
+	windows[0].save_button.style("z-index", "0");
+	windows[1].save_button.style("z-index", "0");
+	windows[2].upload_button.style("z-index", "0");
+	windows[2].drop_area.style("background-color", "rgba(186, 234, 236, 0.5)");
 }
 
 function unhighlightDropArea(){
-	load_dialog.upload_button.style("z-index", "1");
-	save_dialog.save_button.style("z-index", "1");
-	screenshot_dialog.save_button.style("z-index", "1");
-	load_dialog.drop_area.style("background", "none");
-}
-
-function initializeSampleGallery(){
-	var dims = galleryDims();
-	gallery = new SlideViewer("Sample Gallery", grid.pos.x, grid.pos.y, dims[0], dims[1], gallery_images, "Open", loadSample);
-	gallery.open();
-}
-
-function galleryDims(){
-	return [constrain(0.65*windowHeight*1.2, 0, windowWidth * 0.9), 0.65*windowHeight];
+	windows[0].save_button.style("z-index", "1");
+	windows[1].save_button.style("z-index", "1");
+	windows[2].upload_button.style("z-index", "1");
+	windows[2].drop_area.style("background", "none");
 }
 
 function loadSample(){
-	loadStrings("samples/" + samples[gallery.current_image] + ".txt", loadSeed);
+	loadStrings("samples/" + samples[windows[5].current_image] + ".txt", loadSeed);
 }
 
 // =======================================================================================================
 // ==SAVING
 // =======================================================================================================
 function openSaveDialog(){
-	if (noOpenWindows())
-		save_dialog.open();
+	closeWindows();
+	windows[0].open();
 }
 
 function openScreenshotDialog(){
-	if (noOpenWindows())
-		screenshot_dialog.open();
+	closeWindows();
+	windows[1].open();
 }
 
 function saveSeed(){
 	var save_data = [];
-	save_data = append(save_data, color_dialog.color_pickers[0].value() + '%' + color_dialog.color_pickers[1].value() + '%' 
-		+ color_dialog.color_pickers[2].value() + '%' + color_dialog.color_pickers[3].value());
-	for (var i = 0; i < nodes_copy.length; i++)
+	save_data = append(save_data, windows[3].color_pickers[0].value() + '%' + windows[3].color_pickers[1].value() + '%' 
+		+ windows[3].color_pickers[2].value() + '%' + windows[3].color_pickers[3].value());
+	for (var i = 0; i < fractal.seed.nodes.length; i++)
 		if (i == 0)
-			save_data = append(save_data, str(nodes_copy[i].pos.x) + "%" + str(nodes_copy[i].pos.y));
+			save_data = append(save_data, str(fractal.seed.nodes[i].pos.x) + "%" + str(fractal.seed.nodes[i].pos.y));
 		else
-			save_data = append(save_data, str(nodes_copy[i].pos.x) + "%" + str(nodes_copy[i].pos.y) + "%" + str(edges_copy[i-1].type));
+			save_data = append(save_data, str(fractal.seed.nodes[i].pos.x) + "%" + str(fractal.seed.nodes[i].pos.y) + "%" + str(fractal.seed.edges[i-1].type));
 	save_data = append(save_data, "~");
 	saveStrings(save_data, save_file_name);
 }
@@ -718,11 +636,11 @@ function screenPixels(){
 function redrawFractalOnly(){
 	// Redraw the screen with only the fractal showing
 	fractal.edges_drawn = false;
-	screenshot_dialog.close();
+	windows[1].close();
 	draw();
 
 	// Reopen screenshot dialog box, won't be shown until the next draw loop
-	screenshot_dialog.open();
+	windows[1].open();
 }
 
 function updateSaveFileName(){
@@ -730,81 +648,17 @@ function updateSaveFileName(){
 }
 
 // =======================================================================================================
-// ==Menu Bar
-// =======================================================================================================
-function initializeMenuBar(){
-	menu_bar = new MenuBar();
-
-	menu_bar.addFolder("FractalSandbox");
-	menu_bar.addButton("About FractalSandbox", "", null);
-	menu_bar.addButton("Sample Gallery", "W", openGallery);
-
-	menu_bar.addFolder("File");
-	menu_bar.addButton("New Fractal", "N", openNewFractalWarningBox);
-	menu_bar.addButton("Open File...", "O", openLoadDialog);
-	menu_bar.addButton("Download as .txt file...", "S", openSaveDialog);
-	menu_bar.addButton("Capture Screenshot...", "D", openScreenshotDialog);
-	menu_bar.addButton("Redraw Seed", "R", null);
-
-	menu_bar.addFolder("Edit");
-	menu_bar.addButton("Undo", "Z", undo);
-	menu_bar.addButton("Hide Edge", "H", hideEdge);
-	menu_bar.addButton("Skip Edge", "J", skipEdge);
-	
-	menu_bar.addFolder("View");
-	menu_bar.addButton("Zoom In", "+", shortcutZoomIn);
-	menu_bar.addButton("Zoom Out", "-", shortcutZoomOut);
-	menu_bar.addButton("Zoom Mode Mouse Centered", "1", zoomModeMouse);
-	menu_bar.checkButton("Zoom Mode Mouse Centered");
-	menu_bar.addButton("Zoom Mode Fractal Centered", "2", zoomModeFractal);
-	menu_bar.addButton("Toggle Gridlines", "G", toggleGridlines);
-	menu_bar.addButton("Center", "space", centerShape);
-	menu_bar.addButton("Rotate Left 90°", "L", rotateLeft90);
-	menu_bar.addButton("Rotate Right 90°", ";", rotateRight90);
-	menu_bar.addButton("Drag Mode Translate", "3", dragModeTranslate);
-	menu_bar.checkButton("Drag Mode Translate");
-	menu_bar.addButton("Drag Mode Rotate", "4", dragModeRotate);
-
-	menu_bar.addFolder("Fractalization");
-	menu_bar.addButton("Lock Seed", "enter", lockSeed);
-	menu_bar.addButton("Level Up", "enter", levelUp);
-	menu_bar.addButton("Max Level Up", "M", maxOut);
-	menu_bar.addButton("Timed Level Up", ", ", null);
-	menu_bar.addButton("Customize Color Scheme", "C", openColorDialog);
-
-	menu_bar.addFolder("Help");
-	menu_bar.addButton("Tutorial", "T", null);
-	menu_bar.addButton("Learn More", "", null);
-
-	menu_bar.initialize();
-
-	menu_bar.enableButtons(["About FractalSandbox", "New Fractal", "Open File...", "Undo", "Toggle Gridlines", "Lock Seed", "Sample Gallery"]);
-}
-
-function mouseOnMenuBar(){
-	var open_folder = menu_bar.folderIsOpen();
-	if (open_folder >= 0){
-		var folder = menu_bar.folders[open_folder];
-		for (var i = 0; i < folder.buttons.length; i++){
-			if (folder.buttons[i].mouseOver())
-				return true;
-		}
-	}
-	return false;
-}
-
-// =======================================================================================================
 // ==COLOR SCHEMES
 // =======================================================================================================
 function openColorDialog(){
-	if (noOpenWindows())
-		color_dialog.open();
+	closeWindows();
+	windows[3].open();
 }
 
 // takes input x in [0, 1]
 function colorMap(x){
-	var from = x <= 0.5 ? color(color_dialog.color_pickers[1].value()) : color(color_dialog.color_pickers[2].value());
-	var to = x <= 0.5 ? color(color_dialog.color_pickers[2].value()) : color(color_dialog.color_pickers[3].value());
+	var from = x <= 0.5 ? color(windows[3].color_pickers[1].value()) : color(windows[3].color_pickers[2].value());
+	var to = x <= 0.5 ? color(windows[3].color_pickers[2].value()) : color(windows[3].color_pickers[3].value());
 
 	x = x <= 0.5 ? map(x, 0, 0.5, 0, 1) : map(x, 0.5, 1, 0, 1);
 
@@ -813,4 +667,32 @@ function colorMap(x){
 	colorMode(RGB);
 	my_color.levels[3] = constrain(my_color.levels[3], 0, 210);
 	return my_color;
+}
+
+// =======================================================================================================
+// ==Mobile Detection
+// =======================================================================================================
+function detectMobile() { 
+ if( navigator.userAgent.match(/Android/i)
+ || navigator.userAgent.match(/webOS/i)
+ || navigator.userAgent.match(/iPhone/i)
+ || navigator.userAgent.match(/iPad/i)
+ || navigator.userAgent.match(/iPod/i)
+ || navigator.userAgent.match(/BlackBerry/i)
+ || navigator.userAgent.match(/Windows Phone/i)
+ ){
+    return true;
+  }
+ else {
+    return false;
+  }
+}
+
+function showMobileMessage() {
+	background(51);
+	fill(200);
+	noStroke();
+	textAlign(CENTER, CENTER);
+	textSize(36);
+	text("Sorry, this site is\nnot yet mobile friendly.", windowWidth / 2, windowHeight / 2);
 }

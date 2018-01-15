@@ -51,8 +51,8 @@ function ColorDialogBox(title, x, y, width, height){
 		this.window.close();
 		this.visible = false;
 		this.hideColorPickers();
-		scaleColors();
-		refresh();
+		fractal.scaleColors();
+		fractal.refresh();
 	}
 
 	this.showColorPickers = function(){

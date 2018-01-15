@@ -16,7 +16,7 @@ function SaveDialogBox(title, x, y, width, height, file_type, save_listener, fil
 	this.initialize = function(){
 		this.text_input = createInput('enter filename');
 		this.text_input.size(125, 20);
-		this.text_input.position(this.pos.x - this.text_input.size().width + 33, this.pos.y - 9);
+		this.text_input.position(this.pos.x - 95, this.pos.y - 9);
 		this.text_input.input(this.file_name_listener);
 		this.text_input.style('z-index', "1");
 		this.text_input.hide();
@@ -37,7 +37,7 @@ function SaveDialogBox(title, x, y, width, height, file_type, save_listener, fil
 				noStroke();
 				textFont("Arial");
 				textAlign(LEFT, CENTER);
-				text(this.file_type, this.pos.x + 35, this.pos.y + 1);
+				text(this.file_type, this.pos.x + 32, this.pos.y + 1);
 			pop();
 		}
 	}
@@ -82,7 +82,7 @@ function SaveDialogBox(title, x, y, width, height, file_type, save_listener, fil
 		this.pos.set(x, y);
 		this.bounds = [this.pos.x - this.width / 2, this.pos.x + this.width / 2, this.pos.y - this.height / 2, this.pos.y + this.height / 2];
 		this.window = new p5Window(this.title, this.pos.x, this.pos.y, this.width, this.height);
-		this.text_input.position(this.pos.x - this.text_input.size().width + 33, this.pos.y - 9);
+		this.text_input.position(this.pos.x - 95, this.pos.y - 9);
 		this.save_button.position(this.pos.x + 63, this.pos.y - 9);
 		if (was_open)
 			this.open();

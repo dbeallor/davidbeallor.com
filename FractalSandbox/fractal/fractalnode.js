@@ -18,4 +18,8 @@ function FractalNode(x, y){
 	this.rotate = function(delta, center){
 		this.pos = this.pos.sub(center).rotate(delta).add(center);
 	}
+
+	this.setSize = function(s){
+		this.r = s;
+	}
 }

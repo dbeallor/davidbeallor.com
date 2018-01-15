@@ -1,4 +1,4 @@
-function Introduction(){
+function Tutorial(){
 	this.steps = [];
 	this.step_types = [];
 

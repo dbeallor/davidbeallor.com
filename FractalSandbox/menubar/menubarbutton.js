@@ -96,7 +96,28 @@ function MenuBarButton(menu_bar, folder, label, shortcut, onClick, y){
 	}
 
 	this.shortcutPressed = function(){
-		return shortcutPressed(this.shortcut);
+		if (this.specialCharacter(this.shortcut)){
+			var code = this.tokenToKeyCode(this.shortcut);
+			return (keyCode == code);
+		}
+		else
+			return (key == this.shortcut);
+	}
+
+	this.tokenToKeyCode = function(token){
+		switch(token){
+			case "space" : return 32; break;
+			case "enter" : return ENTER; break;
+			case "+" : return 187; break;
+			case "-" : return 189; break;
+			case "?" : return 191; break;	
+			case ";" : return 186; break;
+		}
+	}
+
+	this.specialCharacter = function(token){
+		var chars = ["space", "enter", "+", "-", "?", ";"];
+		return (chars.indexOf(token) > -1);
 	}
 
 	this.check = function(){

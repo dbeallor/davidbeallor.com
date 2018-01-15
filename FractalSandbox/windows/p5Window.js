@@ -5,7 +5,7 @@ function p5Window(title, x, y, width, height){
 	this.height = height;
 	this.fill = color(220);
 	this.accent = color(180);
-	this.header_height = max(this.height * 0.08, 20);
+	this.header_height = constrain(this.height * 0.13, 0, 40);
 	this.bounds = [this.pos.x - this.width / 2, this.pos.x + this.width / 2, this.pos.y - this.height / 2, this.pos.y + this.height / 2];
 	this.exit_button = new ExitButton(this.pos.x + this.width / 2 - this.header_height / 2, this.pos.y - this.height / 2 + this.header_height / 2);
 	this.visible = false;
@@ -26,6 +26,10 @@ function p5Window(title, x, y, width, height){
 				textFont("Arial");
 				textStyle(BOLD);
 				textAlign(CENTER, CENTER);
+				if (this.header_height > 38)
+					textSize(14);
+				else
+					textSize(12);
 				text(this.title, 0, -this.height / 2 + this.header_height / 2 + 1);
 				stroke(0);
 				fill(this.fill);
@@ -37,10 +41,14 @@ function p5Window(title, x, y, width, height){
 				noStroke();
 				text(this.text, 0, (-this.height / 2 + this.header_height)/2);
 			pop();
-			if (this.buttons.length > 0){
-				for (var i = 0; i < this.buttons.length; i++)
-					this.buttons[i].show();
-			}
+			this.showButtons();
+		}
+	}
+
+	this.showButtons = function(){
+		if (this.buttons.length > 0){
+			for (var i = 0; i < this.buttons.length; i++)
+				this.buttons[i].show();
 		}
 	}
 

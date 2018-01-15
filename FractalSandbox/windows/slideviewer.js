@@ -11,15 +11,16 @@ function SlideViewer(title, x, y, width, height, images, button_title, listener)
 	var d = pixelDensity();
 	this.graphics = createGraphics(this.width * d, (this.height - this.window.header_height * 2) * d);
 	this.visible = false;
-	this.left_bounds = [this.bounds[0], this.pos.x - this.width * 0.25, this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
-	this.right_bounds = [this.pos.x + this.width * 0.25, this.bounds[1], this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
+	this.left_bounds = [this.bounds[0], this.pos.x - this.width * (1.0/3), this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
+	this.right_bounds = [this.pos.x + this.width * (1.0/3), this.bounds[1], this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
 	this.rect_alpha = 110;
-	this.window.addButton(button_title, this.pos.x, this.pos.y + this.height / 2 - this.window.header_height / 2, this.width * 0.1, this.window.header_height * 0.7, listener);
+	this.window.addButton(button_title, this.pos.x, this.pos.y + this.height / 2 - this.window.header_height / 2, this.width * 0.05, this.window.header_height * 0.6, listener);
 
 	this.show = function(){
 		if (this.visible){
 			this.window.show();
 			push();
+				// Refresh Graphics
 				var d = pixelDensity();
 				var y_dim = this.height - 2 * this.window.header_height;
 				var x_dim = (this.images[this.current_image].width * y_dim) / this.images[this.current_image].height;
@@ -29,10 +30,13 @@ function SlideViewer(title, x, y, width, height, images, button_title, listener)
 				this.graphics.imageMode(CENTER);
 				this.graphics.image(this.images[this.current_image], 0, 0, x_dim, y_dim);
 
+				// Show Graphics
 				resetMatrix();
 				translate(this.pos.x, this.pos.y);
 				imageMode(CENTER);
 				image(this.graphics, 0, 0, this.graphics.width / d, this.graphics.height / d);
+
+				// Black frame
 				noFill();
 				stroke(0);
 				resetMatrix();
