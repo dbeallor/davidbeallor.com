@@ -13,10 +13,10 @@ function LoadingAnimation(){
 			image(intro_image, windowWidth / 2, windowHeight / 2, x_dim, y_dim);
 
 			resetMatrix();
-			translate(windowWidth / 2, windowHeight / 2 + windowHeight * 0.1);
+			translate(windowWidth / 2, windowHeight / 2 + windowHeight * 0.13);
 			rotate(this.angle);
 			imageMode(CENTER);
-			image(load_icon, 0, 0, windowHeight * 0.17, windowHeight * 0.17);
+			image(load_icon, 0, 0, windowHeight * 0.25, windowHeight * 0.25);
 			this.angle += 0.04;
 
 			fill(255);
@@ -32,7 +32,7 @@ function LoadingAnimation(){
 
 			resetMatrix();
 			textAlign(CENTER, CENTER);
-			text("Loading" + this.dots, windowWidth / 2, windowHeight / 2 + windowHeight * 0.22);
+			text("Loading" + this.dots, windowWidth / 2, windowHeight / 2 + windowHeight * 0.29);
 		pop();
 	}
 }
