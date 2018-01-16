@@ -99,7 +99,7 @@ function Tutorial(){
 		this.windows[0].setTextStyle(NORMAL);
 		this.windows[0].setTextSize(14);
 		this.windows[0].setTextPosition(0, -25);
-		this.windows[0].setText("Welcome to FractalMaker!\n\nLet's run through an example of a\nfundamental fractal... The Sierpinski Triangle");
+		this.windows[0].setText("Welcome to Fractality!\n\nLet's run through an example of a\nfundamental fractal... The Sierpinski Triangle");
 		this.windows[0].addButton("Continue", grid.pos.x, grid.pos.y + 42, 70, 30, nextWindow);
 
 		this.addWindow("Fractal Seeds", grid.pos.x, grid.pos.y, 400, 190);
