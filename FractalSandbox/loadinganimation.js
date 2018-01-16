@@ -1,5 +1,8 @@
 function LoadingAnimation(){
 	this.angle = 0;
+	this.dot_counter = 0;
+	this.max = 100;
+	this.dots = "";
 
 	this.show = function(){
 		push();
@@ -10,11 +13,26 @@ function LoadingAnimation(){
 			image(intro_image, windowWidth / 2, windowHeight / 2, x_dim, y_dim);
 
 			resetMatrix();
-			translate(windowWidth / 2, windowHeight / 2 + 100);
+			translate(windowWidth / 2, windowHeight / 2 + windowHeight * 0.1);
 			rotate(this.angle);
 			imageMode(CENTER);
-			image(load_icon, 0, 0, 200, 200);
+			image(load_icon, 0, 0, windowHeight * 0.17, windowHeight * 0.17);
 			this.angle += 0.04;
+
+			fill(255);
+			this.dot_counter = ((this.dot_counter + 1) % this.max);
+			if (this.dot_counter == 0)
+				this.dots = "";
+			if (this.dot_counter == this.max / 4 - 1)
+				this.dots = ".";
+			if (this.dot_counter == this.max / 2 - 1)
+				this.dots = "..";
+			if (this.dot_counter == 3 * this.max / 4 - 1)
+				this.dots = "...";
+
+			resetMatrix();
+			textAlign(CENTER, CENTER);
+			text("Loading" + this.dots, windowWidth / 2, windowHeight / 2 + windowHeight * 0.22);
 		pop();
 	}
 }

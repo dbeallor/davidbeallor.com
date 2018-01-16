@@ -117,7 +117,7 @@ function galleryDims(){
 // =======================================================================================================
 function draw() {
 	if (!detectMobile()){
-		if (images_loaded == samples.length && millis() > 2000){
+		if (images_loaded == samples.length && millis() > 2500){
 			styleCursor();
 			background(color(windows[3].color_pickers[0].value()));
 
