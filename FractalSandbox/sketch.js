@@ -6,8 +6,10 @@ var canv;
 var canvas_dims = [720, 520];
 var screen_bounds;
 var grid;
+var images_loaded = 0;
 
 var intro_image;
+var load_icon;
 
 // Zoom and drag
 var drag_mode;
@@ -28,10 +30,8 @@ var ready;
 // =======================================================================================================
 function preload(){
 	if (!detectMobile()){
-		for (var i = 0; i < samples.length; i++)
-			gallery_images[i] = loadImage("snapshots/" + samples[i] + ".png");
-
 		intro_image = loadImage("intro.png");
+		load_icon = loadImage("load_icon.png");
 	}
 }
 
@@ -63,7 +63,12 @@ function setup() {
 		tutorial = new Tutorial();
 		tutorial.initialize();
 		tutorial.close();
-		// tutorial.open();
+
+		if (images_loaded == 0)
+			for (var i = 0; i < samples.length; i++)
+				gallery_images[i] = loadImage("snapshots/" + samples[i] + ".png", function() {images_loaded += 1});
+
+		loading_animation = new LoadingAnimation();
 	}	
 }
 
@@ -112,32 +117,36 @@ function galleryDims(){
 // =======================================================================================================
 function draw() {
 	if (!detectMobile()){
-		styleCursor();
-		background(color(windows[3].color_pickers[0].value()));
+		if (images_loaded == samples.length && millis() > 2000){
+			styleCursor();
+			background(color(windows[3].color_pickers[0].value()));
 
-		if (fractal.creating_seed)
-			grid.show();
+			if (fractal.creating_seed)
+				grid.show();
 
-		fractal.show();
+			fractal.show();
 
-		if (fractal.fractalizing)
-			load_bar.show();
+			if (fractal.fractalizing)
+				load_bar.show();
 
-		dragTranslateShape();
-		dragRotateShape();
+			dragTranslateShape();
+			dragRotateShape();
 
-		if(!noOpenWindows())
-			showWindows();
+			if(!noOpenWindows())
+				showWindows();
 
-		menu_bar.show();
+			menu_bar.show();
 
-		tutorial.show();
-		
-		if (!mouseIsPressed && !keyIsPressed && !fractal.fractalizing)
-			ready = true;
+			tutorial.show();
+			
+			if (!mouseIsPressed && !keyIsPressed && !fractal.fractalizing)
+				ready = true;
 
-		// fill(255);
-		// text(mouseX + ", " + mouseY, 50, 50);
+			// fill(255);
+			// text(mouseX + ", " + mouseY, 50, 50);
+		}
+		else
+			loading_animation.show();
 	}
 	else
 		showMobileMessage();
