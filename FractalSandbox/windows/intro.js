@@ -1,8 +1,8 @@
 function Intro(){
 	this.pos = createVector(grid.pos.x, grid.pos.y);
-	this.title = "Welcome!";
+	this.title = "Welcome";
 	this.button_gap = 130;
-	this.button_offsetX = 200;
+	this.button_offsetX = 193;
 	this.button_labels = ["Show Me Around", "Sample Gallery", "New Fractal", "Open Fractal"];
 	this.button_height = 40;
 	this.button_width = -1;
@@ -15,15 +15,16 @@ function Intro(){
 	this.visible = false;
 
 	this.initialize = function(){
-		this.height = windowHeight * 0.8;
-		this.width = constrain(this.height * 1.35, 0, windowWidth * 0.9);
+		this.height = windowHeight * 0.9;
+		this.width = constrain(this.height * 1.6, 0, windowWidth * 0.9);
 		this.bounds = [this.pos.x - this.width / 2, this.pos.x + this.width / 2, this.pos.y - this.height / 2, this.pos.y + this.height / 2];
 		this.window = new p5Window(this.title, this.pos.x, this.pos.y, this.width, this.height);
-		this.button_offsetY = this.height * 0.11;
+		this.button_offsetY = this.height * 0.03 + 10;
 		this.window.addButton(this.button_labels[0], this.pos.x - this.button_offsetX                          , this.pos.y + this.button_offsetY, this.button_width, this.button_height, startTutorial);
 		this.window.addButton(this.button_labels[1], this.pos.x - this.button_offsetX +     this.button_gap, this.pos.y + this.button_offsetY, this.button_width, this.button_height, openGallery);
 		this.window.addButton(this.button_labels[2], this.pos.x - this.button_offsetX + 2 * this.button_gap, this.pos.y + this.button_offsetY, this.button_width, this.button_height, closeWindows);
 		this.window.addButton(this.button_labels[3], this.pos.x - this.button_offsetX + 3 * this.button_gap, this.pos.y + this.button_offsetY, this.button_width, this.button_height, openLoadDialog);
+		this.window.exitable = false;
 
 		var d = pixelDensity();
 		this.graphics = createGraphics(this.width * d, (this.height - this.window.header_height * 2) * d);
@@ -81,10 +82,7 @@ function Intro(){
 	}
 
 	this.onKeyPress = function(){
-		if (this.visible){
-			if (keyCode == ESCAPE)
-				this.close();
-		}
+		null;
 	}
 
 	this.onClick = function(){

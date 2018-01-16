@@ -5,13 +5,17 @@ function p5Window(title, x, y, width, height){
 	this.height = height;
 	this.fill = color(220);
 	this.accent = color(180);
-	this.header_height = constrain(this.height * 0.13, 0, 40);
+	this.header_height = constrain(this.height * 0.15, 20, 30);
 	this.bounds = [this.pos.x - this.width / 2, this.pos.x + this.width / 2, this.pos.y - this.height / 2, this.pos.y + this.height / 2];
 	this.exit_button = new ExitButton(this.pos.x + this.width / 2 - this.header_height / 2, this.pos.y - this.height / 2 + this.header_height / 2);
 	this.visible = false;
 	this.buttons = [];
 	this.text = "";
+	this.text_style = BOLD;
+	this.text_size = 12;
+	this.text_position = createVector(0, (-this.height / 2 + this.header_height)/2);
 	this.image = image || createImage(this.width, this.height);
+	this.exitable = true;
 
 	this.show = function(){
 		if (this.visible){
@@ -26,7 +30,7 @@ function p5Window(title, x, y, width, height){
 				textFont("Arial");
 				textStyle(BOLD);
 				textAlign(CENTER, CENTER);
-				if (this.header_height > 38)
+				if (this.header_height > 38 )
 					textSize(14);
 				else
 					textSize(12);
@@ -36,10 +40,13 @@ function p5Window(title, x, y, width, height){
 				rect(0, 0, this.width, this.height - 2 * this.header_height);
 				fill(this.accent);
 				rect(0, this.height / 2 - this.header_height / 2, this.width, this.header_height, 0, 0, 5, 5);
-				this.exit_button.show();
+				if (this.exitable)
+					this.exit_button.show();
 				fill(0);
 				noStroke();
-				text(this.text, 0, (-this.height / 2 + this.header_height)/2);
+				textSize(this.text_size);
+				textStyle(this.text_style);
+				text(this.text, this.text_position.x, this.text_position.y);
 			pop();
 			this.showButtons();
 		}
@@ -53,7 +60,7 @@ function p5Window(title, x, y, width, height){
 	}
 
 	this.onClick = function(){
-		if (this.exit_button.clicked()){
+		if (this.exitable && this.exit_button.clicked()){
 			this.close();
 			return true;
 		}
@@ -98,6 +105,18 @@ function p5Window(title, x, y, width, height){
 
 	this.setText = function(t){
 		this.text = t;
+	}
+
+	this.setTextStyle = function(ts){
+		this.text_style = ts;
+	}
+
+	this.setTextSize = function(ts){
+		this.text_size = ts;
+	}
+
+	this.setTextPosition = function(x, y){
+		this.text_position.set(x, y);
 	}
 
 	this.setPosition = function(x, y){

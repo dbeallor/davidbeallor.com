@@ -27,10 +27,12 @@ var ready;
 // ==PRELOAD AND SETUP
 // =======================================================================================================
 function preload(){
-	for (var i = 0; i < samples.length; i++)
-		gallery_images[i] = loadImage("snapshots/" + samples[i] + ".png");
+	if (!detectMobile()){
+		for (var i = 0; i < samples.length; i++)
+			gallery_images[i] = loadImage("snapshots/" + samples[i] + ".png");
 
-	intro_image = loadImage("intro.png");
+		intro_image = loadImage("intro.png");
+	}
 }
 
 function setup() {
@@ -57,6 +59,11 @@ function setup() {
 		ready = false;
 
 		fractal = new Fractal();
+
+		tutorial = new Tutorial();
+		tutorial.initialize();
+		tutorial.close();
+		// tutorial.open();
 	}	
 }
 
@@ -85,7 +92,6 @@ function initializeWindows(){
 
 	var dims = galleryDims();
 	var gallery = new SlideViewer("Sample Gallery", grid.pos.x, grid.pos.y, dims[0], dims[1], gallery_images, "Open", loadSample);
-	// gallery.open();
 	windows = append(windows, gallery);
 
 	var intro = new Intro();
@@ -99,10 +105,6 @@ function galleryDims(){
 	var ratio = 1.4;
 	var w = constrain(h * ratio, 0, 0.9 * windowWidth);
 	return [w, h];
-}
-
-function startTutorial(){
-	null;
 }
 
 // =======================================================================================================
@@ -128,6 +130,8 @@ function draw() {
 			showWindows();
 
 		menu_bar.show();
+
+		tutorial.show();
 		
 		if (!mouseIsPressed && !keyIsPressed && !fractal.fractalizing)
 			ready = true;
@@ -152,31 +156,33 @@ function styleCursor(){
 // ==WINDOW RESIZING
 // =======================================================================================================
 function windowResized() {
-	screen_bounds = [0, windowWidth, menu_bar.height, windowHeight];
+	if (!detectMobile()){
+		screen_bounds = [0, windowWidth, menu_bar.height, windowHeight];
 
-	resizeCanvas(windowWidth, windowHeight);
+		resizeCanvas(windowWidth, windowHeight);
 
-	menu_bar.resize(windowWidth);
+		menu_bar.resize(windowWidth);
 
-	var type = grid.type;
-	grid = new Grid(windowWidth / 2, windowHeight / 2 + menu_bar.height / 2, max(windowWidth, windowHeight));
-	grid.setType(type);
+		var type = grid.type;
+		grid = new Grid(windowWidth / 2, windowHeight / 2 + menu_bar.height / 2, max(windowWidth, windowHeight));
+		grid.setType(type);
 
-	var dims = galleryDims();
-	windows[5].resize(dims[0], dims[1]);
-	windows[6].resize();
-	for (var i = 0; i < windows.length; i++)
-		windows[i].setPosition(grid.pos.x, grid.pos.y);
+		var dims = galleryDims();
+		windows[5].resize(dims[0], dims[1]);
+		windows[6].resize();
+		for (var i = 0; i < windows.length; i++)
+			windows[i].setPosition(grid.pos.x, grid.pos.y);
 
-	var d = pixelDensity();
-	fractal.resize(d * windowWidth, d * windowHeight);
+		var d = pixelDensity();
+		fractal.resize(d * windowWidth, d * windowHeight);
+	}	
 }
 
 // =======================================================================================================
 // ==MOUSE AND KEYBOARD EVENTS
 // =======================================================================================================
 function mousePressed(){
-	if (mouseButton === LEFT){
+	if (!detectMobile() && mouseButton === LEFT){
 		if (noOpenWindows() && ready && menu_bar.folderIsOpen() < 0)
 			// Store click location globally for drag functionality
 			prev_click = [mouseX, mouseY];
@@ -188,6 +194,8 @@ function mousePressed(){
 		if (menu_bar.folderIsOpen() < 0 && !noOpenWindows())
 			windowMousePressEvents()
 
+		tutorial.onClick();
+
 		fractal.onClick();
 
 		// Menu bar mouse events
@@ -197,19 +205,23 @@ function mousePressed(){
 }
 
 function keyPressed(){
-	if (noOpenWindows() && ready){
-		menu_bar.checkShortcuts();
-		ready = false;
+	if (!detectMobile()){
+		if (noOpenWindows() && ready){
+			menu_bar.checkShortcuts();
+			ready = false;
+		}
+		windowKeypressEvents();
 	}
-	windowKeypressEvents();
 }
 
 function mouseWheel(event){
-	if (zoom_mode == 1)
-		fractal.refreshRotationCenter();
-	if (!mouseIsPressed && fractal.idle() && noOpenWindows() && onScreen())
-		fractal.zoom(map(constrain(event.delta, -200, 200), -200, 200, 1.3, 0.7), zoom_mode == 0 ? [mouseX, mouseY] : [fractal.rotation_center.x, fractal.rotation_center.y]);
-	return false;
+	if (!detectMobile()){
+		if (zoom_mode == 1)
+			fractal.refreshRotationCenter();
+		if (!mouseIsPressed && fractal.idle() && noOpenWindows() && onScreen())
+			fractal.zoom(map(constrain(event.delta, -200, 200), -200, 200, 1.3, 0.7), zoom_mode == 0 ? [mouseX, mouseY] : [fractal.rotation_center.x, fractal.rotation_center.y]);
+		return false;
+	}
 }
 
 function onScreen(){
@@ -226,8 +238,8 @@ function clickout(){
 function initializeMenuBar(){
 	menu_bar = new MenuBar();
 
-	menu_bar.addFolder("FractalSandbox");
-	menu_bar.addButton("About FractalSandbox", "", null);
+	menu_bar.addFolder("Fractality");
+	menu_bar.addButton("About Fractality", "", null);
 	menu_bar.addButton("Sample Gallery", "W", openGallery);
 
 	menu_bar.addFolder("File");
@@ -267,25 +279,25 @@ function initializeMenuBar(){
 	menu_bar.addButton("Drag Mode Rotate", "4", dragModeRotate);
 
 	menu_bar.addFolder("Help");
-	menu_bar.addButton("Tutorial", "T", null);
+	menu_bar.addButton("Tutorial", "T", startTutorial);
 	menu_bar.addButton("Learn More", "", null);
 
 	menu_bar.initialize();
 
-	menu_bar.enableButtons(["About FractalSandbox", "Sample Gallery", "New Fractal", "Open File...", "Undo", "Toggle Gridlines", "Lock Seed"]);	
+	menu_bar.enableButtons(["About Fractality", "Sample Gallery", "New Fractal", "Open File...", "Undo", "Toggle Gridlines", "Lock Seed", "Tutorial"]);	
 }
 
 function refreshMenuBarButtons(){
 	if (fractal.creating_seed)
-		menu_bar.enableButtons(["About FractalSandbox", "Sample Gallery", "New Fractal", "Open File...", "Undo", "Toggle Gridlines", "Lock Seed"]);
+		menu_bar.enableButtons(["About Fractality", "Sample Gallery", "New Fractal", "Open File...", "Undo", "Toggle Gridlines", "Lock Seed", "Tutorial"]);
 	else if (fractal.creating_generator)
-		menu_bar.enableButtons(["About FractalSandbox", "Sample Gallery", "New Fractal", "Open File...", "Skip Edge", "Hide Edge", "Undo"]);
+		menu_bar.enableButtons(["About Fractality", "Sample Gallery", "New Fractal", "Open File...", "Skip Edge", "Hide Edge", "Undo", "Tutorial"]);
 	else if (fractal.viewing_seed)
-		menu_bar.enableButtons(["About FractalSandbox", "Sample Gallery", "New Fractal", "Open File...", "View Seed"]);
+		menu_bar.enableButtons(["About Fractality", "Sample Gallery", "New Fractal", "Open File...", "View Seed", "Tutorial"]);
 	else
-		menu_bar.enableButtons(["About FractalSandbox", "New Fractal", "Open File...", "Sample Gallery", "Level Up", "Max Level Up", "Timed Level Up", "Download as txt file...", 
+		menu_bar.enableButtons(["About Fractality", "New Fractal", "Open File...", "Sample Gallery", "Level Up", "Max Level Up", "Timed Level Up", "Download as txt file...", 
 									"Capture Screenshot...", "Redraw Seed", "Customize Color Scheme",   "Zoom In", "Zoom Out", "Center", "Rotate Left 90°", "Rotate Right 90°", "View Seed", 
-									"Drag Mode Rotate", "Drag Mode Translate", "Zoom Mode Mouse Centered", "Zoom Mode Fractal Centered",]);
+									"Drag Mode Rotate", "Drag Mode Translate", "Zoom Mode Mouse Centered", "Zoom Mode Fractal Centered", "Tutorial"]);
 }
 
 function mouseOnMenuBar(){
@@ -670,22 +682,37 @@ function colorMap(x){
 }
 
 // =======================================================================================================
+// ==Tutorial
+// =======================================================================================================
+function startTutorial(){
+	newFractal();
+	tutorial.open();
+}
+
+function nextWindow(){
+	tutorial.nextWindow();
+}
+
+function doneTutorial(){
+	newFractal();
+	windows[6].open();
+}
+
+// =======================================================================================================
 // ==Mobile Detection
 // =======================================================================================================
 function detectMobile() { 
- if( navigator.userAgent.match(/Android/i)
- || navigator.userAgent.match(/webOS/i)
- || navigator.userAgent.match(/iPhone/i)
- || navigator.userAgent.match(/iPad/i)
- || navigator.userAgent.match(/iPod/i)
- || navigator.userAgent.match(/BlackBerry/i)
- || navigator.userAgent.match(/Windows Phone/i)
- ){
-    return true;
-  }
- else {
-    return false;
-  }
+	if (navigator.userAgent.match(/Android/i)
+		|| navigator.userAgent.match(/webOS/i)
+		|| navigator.userAgent.match(/iPhone/i)
+		|| navigator.userAgent.match(/iPad/i)
+		|| navigator.userAgent.match(/iPod/i)
+		|| navigator.userAgent.match(/BlackBerry/i)
+		|| navigator.userAgent.match(/Windows Phone/i)
+	)
+		return true;
+	else
+		return false;
 }
 
 function showMobileMessage() {

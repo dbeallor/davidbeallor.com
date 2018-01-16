@@ -140,10 +140,10 @@ function SlideViewer(title, x, y, width, height, images, button_title, listener)
 		this.pos.set(x, y);
 		this.bounds = [this.pos.x - this.width / 2, this.pos.x + this.width / 2, this.pos.y - this.height/2, this.pos.y + this.height/2];
 		this.window = new p5Window(this.title, this.pos.x, this.pos.y, this.width, this.height);
-		this.window.addButton(button_title, this.pos.x, this.pos.y + this.height / 2 - this.window.header_height / 2, this.width * 0.1, this.window.header_height * 0.7, listener);
+		this.window.addButton(button_title, this.pos.x, this.pos.y + this.height / 2 - this.window.header_height / 2, this.width * 0.05, this.window.header_height * 0.6, listener);
 		this.graphics = createGraphics(this.width * d, (this.height - this.window.header_height * 2) * d);
-		this.left_bounds = [this.bounds[0], this.pos.x - this.width * 0.25, this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
-		this.right_bounds = [this.pos.x + this.width * 0.25, this.bounds[1], this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
+		this.left_bounds = [this.bounds[0], this.pos.x - this.width * (1.0/3), this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
+		this.right_bounds = [this.pos.x + this.width * (1.0/3), this.bounds[1], this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
 		if (was_open)
 			this.open();
 	}
@@ -155,10 +155,10 @@ function SlideViewer(title, x, y, width, height, images, button_title, listener)
 		this.height = h;
 		this.bounds = [this.pos.x - this.width / 2, this.pos.x + this.width / 2, this.pos.y - this.height/2, this.pos.y + this.height/2];
 		this.window = new p5Window(this.title, this.pos.x, this.pos.y, this.width, this.height);
-		this.window.addButton(button_title, this.pos.x, this.pos.y + this.height / 2 - this.window.header_height / 2, this.width * 0.1, this.window.header_height * 0.7, listener);
+		this.window.addButton(button_title, this.pos.x, this.pos.y + this.height / 2 - this.window.header_height / 2, this.width * 0.05, this.window.header_height * 0.6, listener);
 		this.graphics = createGraphics(this.width * d, (this.height - this.window.header_height * 2) * d);
-		this.left_bounds = [this.bounds[0], this.pos.x - this.width * 0.25, this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
-		this.right_bounds = [this.pos.x + this.width * 0.25, this.bounds[1], this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
+		this.left_bounds = [this.bounds[0], this.pos.x - this.width * (1.0/3), this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
+		this.right_bounds = [this.pos.x + this.width * (1.0/3), this.bounds[1], this.bounds[2] + this.window.header_height, this.bounds[3] - this.window.header_height];
 		if (was_open)
 			this.open();
 	}

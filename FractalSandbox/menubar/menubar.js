@@ -6,6 +6,7 @@ function MenuBar(){
 	this.fill = color(220);
 	this.bounds = [this.pos.x, this.pos.x + this.width, 0, this.height];
 	this.folders = [];
+	this.enabled = true;
 
 	this.addFolder = function(f){
 		this.folders = append(this.folders, new MenuBarFolder(this, f));
@@ -20,6 +21,14 @@ function MenuBar(){
 			this.folders[i].initialize();
 	}
 
+	this.disable = function(){
+		this.enabled = false;
+	}
+
+	this.enable = function(){
+		this.enabled = true;
+	}
+
 	this.show = function(){
 		push();
 			stroke(100);
@@ -28,7 +37,7 @@ function MenuBar(){
 			for (var i = 0; i < this.folders.length; i++){
 				this.folders[i].show();
 			}
-			if (this.folderIsOpen() >= 0)
+			if (this.folderIsOpen() >= 0 && this.enabled)
 				this.mouseOver();
 		pop();
 	}
@@ -65,7 +74,7 @@ function MenuBar(){
 	this.onClick = function(){
 		if (this.withinBounds(mouseX, mouseY, this.bounds)){
 			for (var i = 0; i < this.folders.length; i++){
-				if (this.folders[i].clicked())
+				if (this.folders[i].clicked() && this.enabled)
 					this.folders[i].is_open ? this.folders[i].close() : this.folders[i].open();
 			}
 		}
@@ -74,7 +83,7 @@ function MenuBar(){
 			if (open_folder >= 0){
 				var folder = this.folders[open_folder];
 				for (var i = 0; i < folder.buttons.length; i++){
-					if (folder.buttons[i].clicked()){
+					if (folder.buttons[i].clicked() && folder.buttons[i].enabled){
 						folder.buttons[i].onClick();
 						break;
 					}
@@ -152,5 +161,13 @@ function MenuBar(){
 				}
 			}
 		}
+	}
+
+	this.openFolder = function(idx){
+		this.folders[idx].open();
+	}
+
+	this.closeFolder = function(idx){
+		this.folders[idx].close();
 	}
 }

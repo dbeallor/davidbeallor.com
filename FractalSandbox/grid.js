@@ -169,16 +169,20 @@ function Grid(x, y, w){
 	this.closestGridPoint = function(x, y){
 		closest_dist = 10000;
 		closest_pos = [-1, -1];
-		var d;
+		var d, i_x, j_x;
 		for (var i = 0; i < this.coords.length; i++){
 			for (var j = 0; j < this.coords.length; j++){
 				d = dist(this.coords[i][j][0], this.coords[i][j][1], x, y);
 				if (d < closest_dist){
 					closest_dist = d;
 					closest_pos = this.coords[i][j];
+					i_x = i;
+					j_x = j;
 				}
 			}
 		}
+		// fill(255);
+		// text(i_x + ', ' + j_x, 50, 50);
 		return closest_pos;
 	}
 }

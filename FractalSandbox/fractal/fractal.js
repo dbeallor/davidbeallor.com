@@ -17,12 +17,12 @@ function Fractal(nodes, edges){
 	this.viewing_seed = false;
 
 	this.show = function(){
-		if (this.creating_seed){
+		if (this.creating_seed && tutorial.idle()){
 			this.followMouseWithNode();
 			this.showSeedWIP();
 		}
 		else if (this.creating_generator){
-			if (onScreen() && noOpenWindows() && menu_bar.folderIsOpen() < 0)
+			if (onScreen() && noOpenWindows() && (menu_bar.folderIsOpen() < 0 || tutorial.idle()))
 				this.refreshEdgeType();
 			this.showSelection();
 		}
@@ -45,14 +45,26 @@ function Fractal(nodes, edges){
 
 	this.onClick = function(){
 		// Seed creation mouse events
-		if (this.creating_seed && onScreen() && this.notDoubledUp() && menu_bar.folderIsOpen() < 0 && ready){
+		if (this.creating_seed && onScreen() && this.notDoubledUp() && menu_bar.folderIsOpen() < 0 && noOpenWindows() && tutorial.idle() && ready){
 			this.updateSeed();
 			ready = false;
 		}
 
 		// Generator creation mouse events
-		if (this.creating_generator && onScreen() && menu_bar.folderIsOpen() < 0 && ready){
-			this.updateGenerator(false, false);
+		if (this.creating_generator && onScreen() && (menu_bar.folderIsOpen() || tutorial.idle()) < 0 && noOpenWindows() && ready){
+			if (tutorial.current_window == 4){
+				// print(this.seed.edges[4].type)
+				if (this.seed.edges[4].type == 0 || this.seed.edges[4].type == 1)
+					this.updateGenerator(false, false);
+			}
+			else if (tutorial.current_window == 6){
+				if (this.current_edge == 3 && (this.seed.edges[2].type == 0 || this.seed.edges[2].type == 1))
+					this.updateGenerator(false, false);
+				if (this.current_edge == 1 && (this.seed.edges[0].type == 0 || this.seed.edges[0].type == 1))
+					this.updateGenerator(false, false);
+			}
+			else
+				this.updateGenerator(false, false);
 			ready = false;
 		}
 	}
@@ -177,7 +189,7 @@ function Fractal(nodes, edges){
 		for (var i = 0; i < this.current_edge - 1; i++)
 			this.edges[i].show();
 
-		if (onScreen() && menu_bar.folderIsOpen() < 0 && noOpenWindows()){
+		if (onScreen() && (menu_bar.folderIsOpen() < 0 || tutorial.idle()) && noOpenWindows()){
 			for (var i = 0; i < this.temp_edges.length; i++){
 				if (this.temp_edges[i].type < 5)
 					this.temp_edges[i].show();
@@ -190,8 +202,12 @@ function Fractal(nodes, edges){
 			if (this.edges[i].type < 5)
 				this.edges[i].show();
 
-		for (var i = 0; i < this.seed.nodes.length; i++)
+		for (var i = 0; i < this.seed.nodes.length; i++){
+			if (i == this.current_edge || i == this.current_edge - 1)
+				this.seed.nodes[i].setSize(20);
 			this.seed.nodes[i].show();
+			this.seed.nodes[i].setSize(10);
+		}
 	}
 
 	this.subdivide = function(idx){

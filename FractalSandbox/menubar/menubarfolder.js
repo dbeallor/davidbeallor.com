@@ -4,7 +4,7 @@ function MenuBarFolder(menu_bar, label){
 		this.pos = createVector(this.menu_bar.folders[this.menu_bar.folders.length - 1].bounds[1], 0);
 	else
 		this.pos = createVector(0, 0);
-	this.width = pow(str(label).length, 1/1.5) * 18;
+	this.width = pow(str(label).length, 1/1.5) * 16;
 	this.height = this.menu_bar.height;
 	this.bounds = [this.pos.x, this.pos.x + this.width, 0, this.height];
 
