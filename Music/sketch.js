@@ -2,76 +2,74 @@ var player;
 var playbar;
 var ready = false;
 var current_state = {paused: false};
-var token = 'BQDsOzVQ8TAIv3kfa2XXStyHQc8wIzU8Y7pe6J9LN0JnAFhl3dSE-TlrXLL6M02Ro3QVaBEO_ERlmt1E9csrP7AI2dfR7I_gDZqZIPS4QfDdj5gGHVRWxdcIAwwJV63YzilcH82vU4kHzcQZ58krK1yqSjIrMacoUWTd';
+var token = 'BQBhQyg3zbNujuRT_pxgxu8lwo3lqc2JJdue9mTlL1TLPsm1eXelfpFaAWNEufC0RMd_PQq8KZy-dvR9nav1AEVlthpRAhfHJdJS6e0nm0ppDxONRdrYuW95CBNAFRApedo7dYbaKFCrpVHVb3IhPY1mW7uy8cq4LdZ_';
+var center;
+var deck;
+var background_image;
+
 function setup(){
 	createCanvas(windowWidth, windowHeight);
 	playbar = new PlayBar();
-}
+	// CROP TO 1800x650
+	deck = new Deck([
+				{'id': 'lonelyboogie', 
+				 'uri': 'spotify:track:6HbYFGNEpivQ49kDCD0uIs'
+				},
+				{'id': 'mindmischief', 
+				 'uri': 'spotify:track:6ewQE1dNPv9qqlnB1CxrvM'
+				}, 
+				{'id': 'notinlove', 
+				 'uri': 'spotify:track:2GAvCh5XRUcadG2xScude5'
+				},
+				{'id': 'grandnewspin', 
+				 'uri': 'spotify:track:2RD1r9eKDTRs6hiN9RR9UC'
+				},
+				{'id': 'locket', 
+				 'uri': 'spotify:track:26AhgCPP2OKAnF4AyBf2Kg'
+				},
+				{'id': 'mountainsong', 
+				 'uri': 'spotify:track:38mndiq3ea14J9yerMJSvH'
+				},
+				{'id': 'sherefused', 
+				 'uri': 'spotify:track:3ePnpJnNUUmcMOsyMZZH2w'
+				},
+			]);
+} 
 
 function keyPressed(){
 	if (key == ' ' && ready){
-		player.pause();
+		player.togglePlay();
 	}
+	deck.keyEvents();
 }
 
 function draw(){
-	background(51);
+	backgroundImage();
+	deck.show();
 	playbar.show();
 }
 
 function windowResized(){
 	playbar.resize();
+	deck.resize();
 	resizeCanvas(windowWidth, windowHeight);
 }
 
 function mousePressed(){
 	playbar.mouseEvents();
+	deck.onClick();
 }
 
-function playSpotifyURI(uri){
-	console.log(player._options)
-    fetch('https://api.spotify.com/v1/me/player/play?device_id=' + player._options.id, {
-      method: 'PUT',
-      body: JSON.stringify({ uris: [uri] }),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-    });
-}
-
-window.onSpotifyWebPlaybackSDKReady = () => {
-	spotifySDKready = true;
-	
-	player = new Spotify.Player({
-		name: 'Web Playback SDK Quick Start Player',
-		getOAuthToken: cb => { cb(token); }
-	});
-
-	console.log(player);
-
-	// Error handling
-	player.addListener('initialization_error', ({ message }) => { console.error(message); });
-	player.addListener('authentication_error', ({ message }) => { console.error(message); });
-	player.addListener('account_error', ({ message }) => { console.error(message); });
-	player.addListener('playback_error', ({ message }) => { console.error(message); });
-
-	// Playback status updates
-	player.addListener('player_state_changed', state => { current_state = state; console.log(state); });
-
-	// Ready
-	player.addListener('ready', ({ device_id }) => {
-		console.log('Ready with Device ID', device_id);
-		ready = true;
-		playbar.player = player;
-		playSpotifyURI('spotify:track:3Hm5r8d43K8PwA1xivMvzw');
-	});
-
-	// Not Ready
-	player.addListener('not_ready', ({ device_id }) => {
-		console.log('Device ID has gone offline', device_id);
-	});
-
-	// Connect to the player!
-	player.connect();
+function backgroundImage(){
+	if (typeof background_image == 'undefined'){
+		loadImage('assets/background_image.jpg', this, function(img, obj){
+			background_image = img;
+		});
+	}
+	else{
+		var wide = windowWidth / windowHeight > background_image.width / background_image.height;
+		var ratio = background_image.width / background_image.height;
+		imageMode(CENTER);
+		image(background_image, windowWidth / 2, windowHeight / 2, wide ? windowWidth : windowHeight * ratio, wide ? windowWidth * (1 / ratio) : windowHeight);
+	}
 }

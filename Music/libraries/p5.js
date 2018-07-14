@@ -18502,9 +18502,10 @@ _dereq_('../core/error_helpers');
  * image of the underside of a white umbrella and grided ceililng above
  *
  */
-p5.prototype.loadImage = function(path, successCallback, failureCallback) {
+p5.prototype.loadImage = function(path, obj, successCallback, failureCallback) {
   var img = new Image();
   var pImg = new p5.Image(1, 1, this);
+  var obj = obj;
   var decrementPreload = p5._getDecrementPreload.apply(this, arguments);
 
   img.onload = function() {
@@ -18515,7 +18516,7 @@ p5.prototype.loadImage = function(path, successCallback, failureCallback) {
     pImg.drawingContext.drawImage(img, 0, 0);
 
     if (typeof successCallback === 'function') {
-      successCallback(pImg);
+      successCallback(pImg, obj);
     }
     if (decrementPreload && (successCallback !== decrementPreload)) {
       decrementPreload();
